@@ -1,0 +1,18 @@
+    # data_transformation/air_quality_dbt/profiles.yml
+    # This profiles.yml is for dbt running INSIDE the Docker container.
+
+    air_quality_dbt:
+      target: dev
+      outputs:
+        dev:
+          type: duckdb
+          # Path inside the Docker container, mapped via volume mounts
+          path: '/opt/airflow/data/air_quality.duckdb'
+          # External root for raw data, also inside the container's mounted volume
+          external_root: '/opt/airflow/data_ingestion/raw_data'
+          external_tables:
+            enabled: true
+            file_format_options:
+              json:
+                auto_detect: true
+    

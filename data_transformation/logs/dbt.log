@@ -1,0 +1,30 @@
+[0m14:54:13.676740 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A03988AF90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A03E14A650>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A03E185110>]}
+
+
+============================== 14:54:13.700929 | 2eac79a7-657d-4a34-b974-5c6bb82d8fab ==============================
+[0m14:54:13.700929 [info ] [MainThread]: Running with dbt=1.10.4
+[0m14:54:13.700929 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'fail_fast': 'False', 'version_check': 'True', 'log_path': 'logs', 'profiles_dir': 'C:\\Users\\anton\\.dbt', 'debug': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'None', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'invocation_command': 'dbt init air_quality_dbt', 'static_parser': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'target_path': 'None', 'introspect': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m14:54:13.940029 [info ] [MainThread]: Creating dbt configuration folder at C:\Users\anton\.dbt
+[0m14:54:13.951049 [debug] [MainThread]: Starter project path: C:\Users\anton\Desktop\OpenAQ Data Ingestion\.venv\Lib\site-packages\dbt\include\starter_project
+[0m14:54:14.041566 [info ] [MainThread]: 
+Your new dbt project "air_quality_dbt" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m14:54:14.051075 [info ] [MainThread]: Setting up your profile.
+[0m14:54:41.376746 [info ] [MainThread]: Profile air_quality_dbt written to C:\Users\anton\.dbt\profiles.yml using target's sample configuration. Once updated, you'll be able to start developing with dbt.
+[0m14:54:41.392396 [debug] [MainThread]: Command `dbt init` succeeded at 14:54:41.376746 after 27.82 seconds
+[0m14:54:41.392396 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A038224A90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A038611C90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002A03E14B990>]}
+[0m14:54:41.392396 [debug] [MainThread]: Flushing usage events
+[0m14:54:41.943229 [debug] [MainThread]: An error was encountered while trying to flush usage events

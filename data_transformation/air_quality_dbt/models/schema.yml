@@ -1,0 +1,53 @@
+# models/schema.yml
+
+# This dbt schema file documents the model and define tests for it
+# it ensures that the model stg_openaq_data has consistent, validated, and 
+# well-described columns.
+# This ensures that it catches invalid, missing, or unexpected data as soon as dbt runs.
+
+version: 2
+
+models:
+  - name: stg_openaq_data
+    description: "Staged air quality data from OpenAQ API v3, flattened and type-casted."
+    columns:
+      - name: location_id
+        description: "Unique identifier for the air quality monitoring station."
+        tests:
+          - unique
+          - not_null
+      - name: location_name
+        description: "Name of the monitoring station."
+        tests:
+          - not_null
+      - name: city
+        description: "City where the station is located."
+        tests:
+          - not_null
+      - name: country
+        description: "Country where the station is located (ISO 2-letter code)."
+        tests:
+          - not_null
+          - accepted_values:
+          # Since we want data for Greece
+              values: ['GR'] 
+      - name: parameter
+        description: "Type of air quality parameter (e.g., PM2.5, NO2, O3)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co'] 
+        description: "Measurement value for the parameter."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 5000 
+      - name: unit
+        description: "Unit of measurement (e.g., µg/m³)."
+        tests:
+          - not_null
+      - name: last_updated
+        description: "Timestamp of the last update for the measurement."
+        tests:
+          - not_null

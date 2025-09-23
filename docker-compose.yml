@@ -1,0 +1,77 @@
+version: '3.8'
+
+x-airflow-common:
+  &airflow-common
+  build: .
+  image: airflow-local:2.9.3
+  environment:
+    AIRFLOW_HOME: /opt/airflow
+    AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/orchestration
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__WEBSERVER__RBAC: 'true'
+    OPENAQ_API_KEY: ${OPENAQ_API_KEY}
+
+  volumes:
+    - ./orchestration:/opt/airflow/orchestration
+    - ./data_ingestion:/opt/airflow/data_ingestion
+    - ./data_transformation:/opt/airflow/data_transformation
+    - ./data:/opt/airflow/data
+    - ./logs:/opt/airflow/logs
+    - ./dags_data:/opt/airflow/dags_data
+  depends_on:
+    postgres:
+      condition: service_healthy
+  healthcheck:
+    test: ["CMD-SHELL", "[ -f /opt/airflow/airflow-webserver.pid ]"]
+    interval: 10s
+    timeout: 10s
+    retries: 5
+
+services:
+  postgres:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+    # changed host 8081 -> container 8080 because I was getting errors
+      - "8081:8080"  
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow_init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username admin \
+          --password admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com || true
+
+volumes:
+  postgres_data:
+  logs:
+  dags_data:
