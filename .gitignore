@@ -16,7 +16,7 @@ logs/
 
 # Data files
 data/air_quality.duckdb
-data/data_ingestion/raw_data/*.json
+data_ingestion/raw_data/*.json
 
 # Environment variables
 .env

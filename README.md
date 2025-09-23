@@ -25,6 +25,7 @@ This project demonstrates a simple DataOps workflow for collecting, storing, and
 ├── explore_duckdb.py
 ├── visualizations
 │   └── visualize_air_quality.py
+│   └── air_quality_plot.png
 ├── README.md
 └── requirements.txt
 ```
