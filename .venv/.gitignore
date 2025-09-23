@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# Logs
+logs/
+*.log
+
+# Data files
+data/air_quality.duckdb
+data/data_ingestion/raw_data/*.json
+
+# Environment variables
+.env
