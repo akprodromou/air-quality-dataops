@@ -1692,3 +1692,17 @@
 [2025-09-23T09:15:34.128+0000] {logging_mixin.py:188} INFO - [2025-09-23T09:15:34.127+0000] {dag.py:3089} INFO - Sync 1 DAGs
 [2025-09-23T09:15:34.174+0000] {logging_mixin.py:188} INFO - [2025-09-23T09:15:34.173+0000] {dag.py:3947} INFO - Setting next_dagrun for air_quality_pipeline to 2025-09-23 00:00:00+00:00, run_after=2025-09-24 00:00:00+00:00
 [2025-09-23T09:15:34.204+0000] {processor.py:183} INFO - Processing /opt/airflow/orchestration/air_quality_pipeline.py took 0.169 seconds
+[2025-09-23T09:16:04.429+0000] {processor.py:161} INFO - Started process (PID=6760) to work on /opt/airflow/orchestration/air_quality_pipeline.py
+[2025-09-23T09:16:04.434+0000] {processor.py:830} INFO - Processing file /opt/airflow/orchestration/air_quality_pipeline.py for tasks to queue
+[2025-09-23T09:16:04.438+0000] {logging_mixin.py:188} INFO - [2025-09-23T09:16:04.437+0000] {dagbag.py:545} INFO - Filling up the DagBag from /opt/airflow/orchestration/air_quality_pipeline.py
+[2025-09-23T09:16:04.473+0000] {processor.py:840} INFO - DAG(s) 'air_quality_pipeline' retrieved from /opt/airflow/orchestration/air_quality_pipeline.py
+[2025-09-23T09:16:04.525+0000] {logging_mixin.py:188} INFO - [2025-09-23T09:16:04.525+0000] {dag.py:3089} INFO - Sync 1 DAGs
+[2025-09-23T09:16:04.570+0000] {logging_mixin.py:188} INFO - [2025-09-23T09:16:04.570+0000] {dag.py:3947} INFO - Setting next_dagrun for air_quality_pipeline to 2025-09-23 00:00:00+00:00, run_after=2025-09-24 00:00:00+00:00
+[2025-09-23T09:16:04.606+0000] {processor.py:183} INFO - Processing /opt/airflow/orchestration/air_quality_pipeline.py took 0.194 seconds
+[2025-09-23T09:16:34.666+0000] {processor.py:161} INFO - Started process (PID=6788) to work on /opt/airflow/orchestration/air_quality_pipeline.py
+[2025-09-23T09:16:34.669+0000] {processor.py:830} INFO - Processing file /opt/airflow/orchestration/air_quality_pipeline.py for tasks to queue
+[2025-09-23T09:16:34.672+0000] {logging_mixin.py:188} INFO - [2025-09-23T09:16:34.672+0000] {dagbag.py:545} INFO - Filling up the DagBag from /opt/airflow/orchestration/air_quality_pipeline.py
+[2025-09-23T09:16:34.702+0000] {processor.py:840} INFO - DAG(s) 'air_quality_pipeline' retrieved from /opt/airflow/orchestration/air_quality_pipeline.py
+[2025-09-23T09:16:34.756+0000] {logging_mixin.py:188} INFO - [2025-09-23T09:16:34.756+0000] {dag.py:3089} INFO - Sync 1 DAGs
+[2025-09-23T09:16:34.797+0000] {logging_mixin.py:188} INFO - [2025-09-23T09:16:34.797+0000] {dag.py:3947} INFO - Setting next_dagrun for air_quality_pipeline to 2025-09-23 00:00:00+00:00, run_after=2025-09-24 00:00:00+00:00
+[2025-09-23T09:16:34.841+0000] {processor.py:183} INFO - Processing /opt/airflow/orchestration/air_quality_pipeline.py took 0.191 seconds
