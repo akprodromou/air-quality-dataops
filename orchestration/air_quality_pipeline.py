@@ -8,26 +8,24 @@ import subprocess
 def ingest_openaq():
     """
     Runs the existing ingest_openaq_data.py script.
-    This will fetch raw data from OpenAQ and save it to data_ingestion/raw_data.
+    This will fetch raw data from OpenAQ and save it to ingestion/raw_data.
     """
     subprocess.run(
-        ["python3", "/opt/airflow/data_ingestion/ingest_openaq_data.py"],
+        ["python3", "/opt/airflow/ingestion/ingest_openaq_data.py"],
         check=True
     )
 
 def run_dbt():
-    """
-    Runs DBT transformations in the air_quality_dbt project.
-    Takes raw data from data_ingestion/raw_data and produces modeled tables.
-    """
     subprocess.run(
         [
             "dbt", "run",
-            "--project-dir", "/opt/airflow/data_transformation/air_quality_dbt",
-            "--profiles-dir", "/opt/airflow/data_transformation/air_quality_dbt"
+            "--project-dir", "/opt/airflow/transformation/air_quality_dbt",
+            "--profiles-dir", "/opt/airflow/transformation/air_quality_dbt",
+            "--models", "stg_ingested_openaq_data stg_openaq_data analysis_air_quality"
         ],
         check=True
     )
+
 
 # Define the DAG
 

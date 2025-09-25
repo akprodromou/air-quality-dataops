@@ -8,6 +8,12 @@
 version: 2
 
 models:
+  - name: stg_ingested_openaq_data
+    description: "Raw OpenAQ JSON data flattened into a table"
+    columns:
+      - name: results
+        description: "Nested JSON results object"
+
   - name: stg_openaq_data
     description: "Staged air quality data from OpenAQ API v3, flattened and type-casted."
     columns:
@@ -29,20 +35,19 @@ models:
         tests:
           - not_null
           - accepted_values:
-          # Since we want data for Greece
-              values: ['GR'] 
+              arguments:
+                values: ['GR'] 
       - name: parameter
         description: "Type of air quality parameter (e.g., PM2.5, NO2, O3)."
         tests:
           - not_null
           - accepted_values:
-              values: ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co'] 
-        description: "Measurement value for the parameter."
-        tests:
-          - not_null
+              arguments:
+                values: ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co'] 
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
-              max_value: 5000 
+              arguments:
+                min_value: 0
+                max_value: 5000 
       - name: unit
         description: "Unit of measurement (e.g., µg/m³)."
         tests:

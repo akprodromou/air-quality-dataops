@@ -1,3 +1,7 @@
+# This script is the first step of this Air Quality Data Pipeline.
+# It connects to the OpenAQ database and brings in data for the location specified (i.e. Thessaloniki)
+# in raw (JSON) format. Prior to using it, one needs to have obtained an OPENAQ_API_KEY.
+
 import requests
 import json
 import os
@@ -17,9 +21,9 @@ DEFAULT_CITY = "Thessaloniki"
 # Directory to store raw data files
 # os.path.join automatically adds the correct separator (\ or /) between the parts of the path
 # RAW_DATA_DIR will now be relative to the container's root for the mounted data_ingestion folder
-# The data_ingestion folder is mounted to /opt/airflow/data_ingestion as per docker-compose.yml
-# So raw_data will be /opt/airflow/data_ingestion/raw_data
-RAW_DATA_DIR = "./data_ingestion/raw_data"
+# The data_ingestion folder is mounted to /opt/airflow/ingestion as per docker-compose.yml
+# So raw_data will be /opt/airflow/ingestion/raw_data
+RAW_DATA_DIR = "./ingestion/raw_data"
 
 # Get OpenAQ API Key from environment variables from load_dotenv()
 OPENAQ_API_KEY = os.getenv("OPENAQ_API_KEY")

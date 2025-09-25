@@ -25,7 +25,7 @@ df = conn.execute("""
         result_item.coordinates.longitude AS longitude,
         result_item.sensorsId AS sensors_id,
         result_item.locationsId AS locations_id
-    FROM read_json('data_ingestion/raw_data/openaq_data_thessaloniki_*.json') as raw_data
+    FROM read_json('ingestion/raw_data/openaq_data_thessaloniki_*.json') as raw_data
     CROSS JOIN UNNEST(raw_data.results) AS t(result_item)
     ORDER BY datetime_utc, sensors_id
 """).fetchdf()

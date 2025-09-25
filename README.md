@@ -97,3 +97,4 @@ docker-compose up -d
 - The pollutants tracked are CO, NO2, O3, PM10, PM2.5, and SO2 (units: µg/m³).
 - For portfolio purposes, the project runs locally or via Docker; no cloud deployment is required.
 
+<!-- We use dbt models to transform the raw JSON data into staging tables (stg_ingested_openaq_data, stg_openaq_data) before applying further transformations. -->
