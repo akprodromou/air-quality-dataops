@@ -12,9 +12,6 @@ project_root = Path(__file__).parent.parent
 # Import the visualization function
 from visualize_air_quality import generate_visualizations
 
-# ----------------------
-# Python functions
-# ----------------------
 
 def ingest_openaq():
     """

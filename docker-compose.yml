@@ -13,6 +13,7 @@ x-airflow-common:
     AIRFLOW__WEBSERVER__RBAC: 'true'
     AIRFLOW__WEBSERVER__BASE_URL: http://localhost:8081
     OPENAQ_API_KEY: ${OPENAQ_API_KEY}
+    OPENAQ_CITY: ${OPENAQ_CITY}
     DUCKDB_PATH: /opt/airflow/data/air_quality.duckdb
     RAW_DATA_PATH: /opt/airflow/ingestion/raw_data
 
