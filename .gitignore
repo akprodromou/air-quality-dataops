@@ -10,9 +10,15 @@ __pycache__/
 env/
 venv/
 
+# dbt
+target/
+dbt_packages/
+
 # Logs
 logs/
 *.log
+*.pid
+*.db
 
 # Data files
 data/air_quality.duckdb
@@ -20,3 +26,9 @@ data_ingestion/raw_data/*.json
 
 # Environment variables
 .env
+
+# OS
+.DS_Store
+
+# Docker
+*.tar

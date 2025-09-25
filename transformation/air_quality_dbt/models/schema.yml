@@ -35,19 +35,16 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['GR'] 
+              values: ['GR']
       - name: parameter
         description: "Type of air quality parameter (e.g., PM2.5, NO2, O3)."
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co'] 
+              values: ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co']
           - dbt_expectations.expect_column_values_to_be_between:
-              arguments:
-                min_value: 0
-                max_value: 5000 
+              min_value: 0
+              max_value: 5000
       - name: unit
         description: "Unit of measurement (e.g., µg/m³)."
         tests:

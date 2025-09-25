@@ -34,5 +34,6 @@ models:
     # Config indicated by + and applies to all files under models/example/
 
 vars:
-  raw_data_path: "../../ingestion/raw_data/*.json"
+  raw_data_path: "/opt/airflow/ingestion/raw_data/*.json"
+
 
