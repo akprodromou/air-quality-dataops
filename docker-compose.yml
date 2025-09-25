@@ -11,6 +11,7 @@ x-airflow-common:
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__WEBSERVER__RBAC: 'true'
+    AIRFLOW__WEBSERVER__BASE_URL: http://localhost:8081
     OPENAQ_API_KEY: ${OPENAQ_API_KEY}
     DUCKDB_PATH: /opt/airflow/data/air_quality.duckdb
     RAW_DATA_PATH: /opt/airflow/ingestion/raw_data
@@ -21,6 +22,10 @@ x-airflow-common:
     - ./transformation:/opt/airflow/transformation
     - ./data:/opt/airflow/data
     - ./logs:/opt/airflow/logs
+    # Anything that DAG writes to /opt/airflow/visualizations will 
+    # appear locally in ./visualizations.
+    - ./airflow_visualizations:/opt/airflow/visualizations
+
   depends_on:
     postgres:
       condition: service_healthy

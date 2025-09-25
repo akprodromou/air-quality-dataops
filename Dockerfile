@@ -18,3 +18,6 @@ COPY . ${AIRFLOW_HOME}
 
 # Set the working directory
 WORKDIR ${AIRFLOW_HOME}
+
+# Install additional Python packages
+RUN pip install --no-cache-dir plotly pandas duckdb
