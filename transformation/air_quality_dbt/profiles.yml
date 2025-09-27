@@ -9,6 +9,7 @@ air_quality_dbt:
       # Uncomment to run locally
       # path: './data/air_quality.duckdb'
       # external_root: './ingestion/raw_data'
+      
       # Paths for Airflow run
       path: "{{ env_var('DUCKDB_PATH', './data/air_quality.duckdb') }}"
       external_root: "{{ env_var('RAW_DATA_PATH', './ingestion/raw_data') }}"

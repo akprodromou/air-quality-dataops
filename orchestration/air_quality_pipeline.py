@@ -1,102 +1,81 @@
 from pathlib import Path
 from airflow import DAG
+# PythonOperator is the built-in Airflow operator used for running arbitrary Python functions
 from airflow.operators.python import PythonOperator
-from datetime import datetime
+from datetime import datetime, timedelta
 import subprocess
 import tempfile
 import os
 
-# Project root inside the container
+# Project root inside the container, i.e. air-quality-dataops <- orchestration
 project_root = Path(__file__).parent.parent
 
 # Import the visualization function
 from visualize_air_quality import generate_visualizations
 
-
+# Trigger the execution of the ingest_openaq_data.py script (located in another file)
+# This fetches raw data from OpenAQ and saves it to ingestion/raw_data
 def ingest_openaq():
-    """
-    Runs the existing ingest_openaq_data.py script.
-    Fetches raw data from OpenAQ and saves it to ingestion/raw_data.
-    """
     subprocess.run(
         ["python3", str(project_root / "ingestion/ingest_openaq_data.py")],
+        # prevent the main program from silently continuing after a critical failure in ingestion
         check=True
     )
 
+# Runs DBT transformations
+# stg_ingested_openaq_data: runs first and converts raw JSON to flattened table (i.e. dumps the data in the warehouse)
+# stg_openaq_data cleans, standarizes column names, to make it queryable and understandable
+# analysis_air_quality (marts layer) chooses attributes to keep and performs deduplication
 def run_dbt():
-    """
-    Runs DBT transformations.
-    """
     subprocess.run(
         [
             "dbt", "run",
+            # tell dbt where dbt_project.yml is located
             "--project-dir", str(project_root / "transformation/air_quality_dbt"),
+            # tell dbt where profiles.yml is located
             "--profiles-dir", str(project_root / "transformation/air_quality_dbt"),
             "--models", "stg_ingested_openaq_data stg_openaq_data analysis_air_quality"
         ],
         check=True
     )
 
-def generate_visualizations_safe():
-    """
-    Generate visualizations and save them to a directory with proper permissions.
-    Returns the path where files were saved.
-    """
-    # Use /tmp/airflow_visualizations as a persistent temp directory
-    output_path = Path("/tmp/airflow_visualizations")
-    
-    try:
-        output_path.mkdir(exist_ok=True, parents=True, mode=0o755)
-        
-        # Test write permissions
-        test_file = output_path / "test.tmp"
-        test_file.write_text("test")
-        test_file.unlink()
-        
-        print(f"Using output directory: {output_path}")
-        result_path = generate_visualizations(output_dir=output_path)
-        
-        # Log the files that were created
-        html_files = list(output_path.glob("*.html"))
-        print(f"✅ Pipeline completed! Created {len(html_files)} visualization files in {output_path}:")
-        for file in html_files:
-            file_size_mb = file.stat().st_size / (1024 * 1024)
-            print(f"  - {file.name} ({file_size_mb:.1f} MB)")
-        
-        return str(output_path)
-        
-    except Exception as e:
-        print(f"Error in visualization generation: {e}")
-        raise
-
-# ----------------------
 # DAG definition
-# ----------------------
+
+# default_args is a dictionary of parameters that define default behavior for all tasks in our DAG
+default_args = {
+    # Error handling, as a precaution
+    "retries": 3,
+    "retry_delay": timedelta(minutes=5),
+    "exponential_backoff": True,
+    "max_retry_delay": timedelta(hours=1),
+}
 
 with DAG(
     dag_id="air_quality_pipeline",
     description="Airflow DAG to ingest OpenAQ data, run DBT, and generate visualizations",
     start_date=datetime(2025, 1, 1),
     schedule_interval="@daily",
+    default_args=default_args,
+    # only start running for the next scheduled interval and ingore missed past ones
     catchup=False,
     tags=["air_quality", "dataops"]
 ) as dag:
 
-    # Tasks
+    # Task definitions
     ingest_task = PythonOperator(
         task_id="ingest_openaq_data",
-        python_callable=ingest_openaq
+        python_callable=ingest_openaq,
     )
 
     dbt_task = PythonOperator(
         task_id="run_dbt",
-        python_callable=run_dbt
+        python_callable=run_dbt,
     )
 
     task_visualizations = PythonOperator(
         task_id='generate_visualizations',
-        python_callable=generate_visualizations_safe,
-        op_kwargs={"output_dir": "/opt/airflow/visualizations"}
+        python_callable=generate_visualizations,
+        op_kwargs={"output_dir": "/opt/airflow/visualizations"},
     )
 
     # Task dependencies

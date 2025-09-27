@@ -1,6 +1,9 @@
 -- A staging model is a layer that transforms this raw data into more structured, clean, and
 -- queryable "building block" tables with proper column names and data types
 
+-- We materialize as view here, because it’s just column renaming + unnesting.
+-- Views are cheap here, and always reflect whatever’s in the ingested table.
+
 {{ config(
     materialized='view'
 ) }}
@@ -25,6 +28,7 @@ WITH expanded AS (
         result_item.value AS value,
         'µg/m³' AS unit,
         result_item.datetime.utc AS last_updated
+    -- dependency defined and read by DAG
     FROM {{ ref('stg_ingested_openaq_data') }},
          UNNEST(results) AS t(result_item)
 )

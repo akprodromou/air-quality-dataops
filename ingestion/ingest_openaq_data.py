@@ -1,4 +1,4 @@
-# This script is the first step of this Air Quality Data Pipeline.
+# This script is the first step of the Air Quality Data Pipeline. It's run inside air_quality_pipeline.py.
 # It connects to the OpenAQ database and brings in data for the location specified (i.e. Thessaloniki)
 # in raw (JSON) format. Prior to using it, one needs to have obtained an OPENAQ_API_KEY.
 
@@ -117,22 +117,21 @@ def save_raw_data(data: dict, city: str, directory: str):
     except Exception as e:
         print(f"An unexpected error occurred while saving data: {e}")
 
-# --- Main Execution ---
+# Main Execution
+# Uses the three functions defined above
 
+# run this code only when running as a script, not at import
 if __name__ == "__main__":
     if not OPENAQ_API_KEY:
         print("\nERROR: OpenAQ API Key not found.")
-        print("Please create a .env file in the same directory as this script with the following content:")
+        print("Obtain a key and create a .env file in the same directory as this script with the following content:")
         print("OPENAQ_API_KEY='YOUR_ACTUAL_OPENAQ_API_KEY_HERE'")
-        print("Alternatively, set the OPENAQ_API_KEY environment variable directly.")
     else:
         # Run the function we defined earlier to get the id for the specified city
         location_id = get_location_id(DEFAULT_CITY)
         if location_id:
             TARGET_LOCATION_ID = location_id 
-            TARGET_LOCATION_NAME_FOR_FILENAME = DEFAULT_CITY.lower().replace(" ", "_")
-
-            print(f"Attempting to fetch data for location ID: {TARGET_LOCATION_ID} ({TARGET_LOCATION_NAME_FOR_FILENAME})...")
+            print(f"Attempting to fetch data for location ID: {TARGET_LOCATION_ID} ({DEFAULT_CITY})...")
 
             # Fetch data using the provided location ID
             air_quality_data = fetch_air_quality_data(TARGET_LOCATION_ID)
@@ -140,7 +139,7 @@ if __name__ == "__main__":
             # Save data if fetching was successful
             # Ensure 'results' array is not empty
             if air_quality_data and air_quality_data.get('results'): 
-                save_raw_data(air_quality_data, TARGET_LOCATION_NAME_FOR_FILENAME, RAW_DATA_PATH)
+                save_raw_data(air_quality_data, DEFAULT_CITY, RAW_DATA_PATH)
                 print("Data ingestion successful!")
             else:
                 print(f"Failed to fetch air quality data or 'results' array was empty for location ID {TARGET_LOCATION_ID}.")

@@ -1,3 +1,4 @@
+-- Materialized as an incremental table, i.e. updated by processing only new or changed data since the last run
 {{ config(
     materialized='incremental',
     unique_key=['location_id', 'parameter', 'last_updated']
@@ -14,6 +15,7 @@ WITH base AS (
         value,
         unit,
         last_updated
+    -- dependency
     FROM {{ ref('stg_openaq_data') }}
 )
 

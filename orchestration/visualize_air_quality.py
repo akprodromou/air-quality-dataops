@@ -4,7 +4,7 @@ import plotly.express as px
 from pathlib import Path
 import os
 
-def generate_visualizations(output_dir="visualizations"):  # Added the missing parameter!
+def generate_visualizations(output_dir="visualizations"):  
     """
     Generate air quality visualizations.
     

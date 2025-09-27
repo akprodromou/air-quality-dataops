@@ -6,6 +6,7 @@ x-airflow-common:
   image: airflow-local:2.9.3
   environment:
     AIRFLOW_HOME: /opt/airflow
+    # point to the script that defines a DAG object
     AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/orchestration
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -23,9 +24,6 @@ x-airflow-common:
     - ./transformation:/opt/airflow/transformation
     - ./data:/opt/airflow/data
     - ./logs:/opt/airflow/logs
-    # Anything that DAG writes to /opt/airflow/visualizations will 
-    # appear locally in ./visualizations.
-    - ./airflow_visualizations:/opt/airflow/visualizations
 
   depends_on:
     postgres:
