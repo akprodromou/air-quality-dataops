@@ -1,0 +1,148 @@
+# models/schema.yml
+# This dbt schema file documents the model and define tests for it
+# it ensures that the model stg_openaq_data has consistent, validated, and 
+# well-described columns.
+# This ensures that it catches invalid, missing, or unexpected data as soon as dbt runs.
+# Version is the schema file specification that dbt uses
+version: 2
+models:
+  - name: stg_ingested_openaq_data
+    description: "Raw OpenAQ JSON data flattened into a table"
+    columns:
+      - name: results
+        description: "Nested JSON results object"
+  - name: stg_openaq_data
+    description: "Staged air quality data from OpenAQ API v3, flattened and type-casted."
+    columns:
+      - name: location_id
+        description: "Unique identifier for the air quality monitoring station."
+        tests:
+          - not_null
+      - name: location_name
+        description: "Name of the monitoring station."
+        tests:
+          - not_null
+      - name: locality
+        description: "City/locality where the station is located."
+        tests:
+          - not_null
+      - name: country_code
+        description: "ISO 2-letter country code of the station."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['GR']
+      - name: country
+        description: "Country name of the station."
+        tests:
+          - not_null
+      - name: sensor_id
+        description: "Unique identifier for the specific sensor measuring this parameter."
+        tests:
+          - not_null
+      - name: parameter
+        description: "Type of air quality parameter (e.g., PM2.5, NO2, O3)."
+        tests:
+          - not_null
+      - name: unit
+        description: "Unit of measurement (e.g., µg/m³)."
+        tests:
+          - not_null
+      - name: last_updated
+        description: "Timestamp of the last update for the measurement."
+        tests:
+          - not_null
+      - name: latitude
+        description: "Latitude coordinate of the monitoring station."
+        tests:
+          - not_null
+      - name: longitude
+        description: "Longitude coordinate of the monitoring station."
+        tests:
+          - not_null
+  - name: stg_ingested_weather_data
+    description: "Raw weather JSON data (from Open-Meteo) flattened into a table"
+    columns:
+      - name: data
+        description: "Nested JSON object containing weather metadata and hourly arrays"
+  - name: stg_weather_data
+    description: "Staged hourly weather forecast data from Open-Meteo API, flattened and type-casted."
+    columns:
+      - name: fetched_at_utc
+        description: "Timestamp when the forecast was fetched from the API (UTC)."
+        tests:
+          - not_null
+      - name: source
+        description: "Source of the weather data (e.g., open-meteo)."
+        tests:
+          - not_null
+      - name: city
+        description: "City for which the weather forecast applies."
+        tests:
+          - not_null
+      - name: latitude
+        description: "Latitude of the forecast location."
+        tests:
+          - not_null
+      - name: longitude
+        description: "Longitude of the forecast location."
+        tests:
+          - not_null
+      - name: utc_offset_seconds
+        description: "Timezone offset in seconds from UTC."
+      - name: timezone
+        description: "Timezone string (e.g., Europe/Athens)."
+      - name: timezone_abbreviation
+        description: "Short timezone abbreviation (e.g., EET)."
+      - name: elevation
+        description: "Elevation of the forecast location in meters."
+      - name: observation_time
+        description: "Forecast timestamp (converted to proper TIMESTAMP type)."
+        tests:
+          - not_null
+      - name: observation_date
+        description: "Date portion of the observation (for grouping by day)."
+      - name: observation_hour
+        description: "Hour of the observation (0-23)."
+      - name: temperature_2m
+        description: "Air temperature at 2 meters above ground, in Celsius."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -50
+              max_value: 60
+      - name: relativehumidity_2m
+        description: "Relative humidity at 2 meters above ground, as a percentage."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+      - name: windspeed_10m
+        description: "Windspeed at 10 meters above ground, in km/h."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 300
+      - name: winddirection_10m
+        description: "Wind direction at 10 meters above ground, in degrees (0–360)."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 360
+      - name: precipitation
+        description: "Precipitation in millimeters for the forecasted hour."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 500
+      - name: is_precipitating
+        description: "Boolean flag indicating if precipitation is occurring."
+      - name: wind_category
+        description: "Categorical classification of wind speed."
+      - name: temperature_category
+        description: "Categorical classification of temperature."
+      - name: has_missing_data
+        description: "Flag indicating if any core measurements are missing."
+      - name: processed_at
+        description: "Timestamp when this record was processed by dbt."

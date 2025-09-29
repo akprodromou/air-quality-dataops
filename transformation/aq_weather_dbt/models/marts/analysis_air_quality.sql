@@ -1,0 +1,25 @@
+-- Materialized as an incremental table, i.e. updated by processing only new or changed data since the last run
+{{ config(
+    materialized='incremental',
+    unique_key=['location_id', 'parameter', 'last_updated']
+) }}
+
+WITH base AS (
+    SELECT
+        current_date AS run_date,
+        location_id,
+        location_name,
+        locality,
+        country,
+        parameter,
+        unit,
+        last_updated
+    -- dependency
+    FROM {{ ref('stg_openaq_data') }}
+)
+
+SELECT *
+FROM base
+{% if is_incremental() %}
+WHERE (location_id, parameter, CAST(last_updated AS TIMESTAMP)) NOT IN (SELECT location_id, parameter, CAST(last_updated AS TIMESTAMP) FROM {{ this }})
+{% endif %}
