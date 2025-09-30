@@ -1,7 +1,8 @@
 # This script is the first step of the Air Quality Data Pipeline. It's run inside air_quality_pipeline.py.
-# It connects to the OpenAQ database and brings in data for the location specified (i.e. Thessaloniki)
+# It connects to the OpenAQ database and brings in data for the coordinates specified 
 # in raw (JSON) format. Prior to using it, one needs to have obtained an OPENAQ_API_KEY.
 
+from pathlib import Path
 import requests
 import json
 import os
@@ -9,92 +10,71 @@ from datetime import datetime
 # Import for environment variables
 from dotenv import load_dotenv 
 
-# Load environment variables from the .env file (in this case only the key),
-# which is not pushed to remote. In production a secrets manager will be preferred.
+# Load environment variables from the .env file which is not pushed to remote. 
+# The location coordinates and name should therefore be defined first in the .env file
+# In production a secrets manager will be preferred.
 load_dotenv()
 
 # OpenAQ API v3 endpoints. This is where we get the data from
 OPENAQ_LOCATIONS_API_URL = "https://api.openaq.org/v3/locations"
 
-# City to fetch data for (default to Thessaloniki)
-DEFAULT_CITY = os.getenv("OPENAQ_CITY", "Thessaloniki")
+# Location to fetch data for 
+CITY_NAME = os.getenv("CITY_NAME")
+CITY_LAT = os.getenv("CITY_LAT")
+CITY_LON = os.getenv("CITY_LON")
 
 # Directory to store raw data files
-# os.getenv checks if the RAW_DATA_PATH specified in docker-compose.yml exists (i.e. /opt/airflow/ingestion)
+# os.getenv checks if the RAW_DATA_PATH_AIR_QUALITY specified in docker-compose.yml exists (i.e. /opt/airflow/ingestion/air_quality)
 # if not, it uses the relative path provided
-# RAW_DATA_PATH will now be relative to the container's root for the mounted data_ingestion folder
-RAW_DATA_PATH = os.getenv("RAW_DATA_PATH","./ingestion/raw_data")
+RAW_DATA_PATH_AIR_QUALITY = Path(os.getenv("RAW_DATA_PATH_AIR_QUALITY","./ingestion/raw_data/air_quality"))
+RAW_DATA_PATH_AIR_QUALITY.mkdir(parents=True, exist_ok=True)
 
 # Get OpenAQ API Key from environment variables from load_dotenv()
 OPENAQ_API_KEY = os.getenv("OPENAQ_API_KEY")
 
-# A function to fetch the location ID for a given city from the OpenAQ API v3
-# The city name to be provided needs to be a string
-def get_location_id(city_name: str) -> int | None:
+# A function to fetch the station name for a given city from the OpenAQ API v3
+def get_station_data(city_lat: int, city_lon: int) -> int | None:
     if not OPENAQ_API_KEY:
         print("Error: OPENAQ_API_KEY environment variable not set.")
         return None
 
-    print(f"Searching for location ID for city: {city_name}...")
+    print(f"Searching for a sensor for station: {city_lat},{city_lon}...")
     # create a dictionary that will be sent along with the HTTP request to the OpenAQ API
     # X-API-Key is the naming convention required by OPENAQ
     headers = {"X-API-Key": OPENAQ_API_KEY}
+
     try:
         params = {
-            "name": city_name,
-            "limit": 1 # We only need one matching location
+            "coordinates": f"{city_lat},{city_lon}",
+            "radius": 5000, 
+            "limit": 1000
         }
         response = requests.get(OPENAQ_LOCATIONS_API_URL, params=params, headers=headers)
+        print(response)
         # add a safety check to check for status code
         response.raise_for_status()
         # .json() parses the response into a Python object
         data = response.json()
+        # print(json.dumps(data, indent=4))
 
         if data and data.get('results'):
             # get the first station for the specific city
-            location = data['results'][0]
-            location_id = location.get('locationsId')
-            print(f"Found location ID {location_id} for {city_name}.")
-            return location_id
+            station = data['results'][0]
+            station_name = station.get('name')
+            station_id = station.get('id')
+            print(f"Found station named {station_name} "
+                  f"for coordinates {city_lat},{city_lon} "
+                  f"with id = {station_id}.")
+            return data
         else:
-            print(f"No location found for city: {city_name}.")
+            print(f"No station found for coordinates {city_lat},{city_lon}.")
             return None
     # catch any HTTP request errors
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching location ID for {city_name}: {e}")
+        print(f"Error fetching station name for coordinates {city_lat},{city_lon}: {e}")
     # catch JSON response errors
     except json.JSONDecodeError as e:
-        print(f"Error decoding JSON response for location ID: {e}")
-    return None
-
-# fetching the actual air quality measurements for a specific location ID
-def fetch_air_quality_data(location_id: int) -> dict | None:
-    if not OPENAQ_API_KEY:
-        print("Error: OPENAQ_API_KEY environment variable not set.")
-        return None
-
-    api_url = f"{OPENAQ_LOCATIONS_API_URL}/{location_id}/latest"
-    print(f"Attempting to fetch latest data for location ID: {location_id} from {api_url}...")
-    headers = {"X-API-Key": OPENAQ_API_KEY}
-    try:
-        response = requests.get(api_url, headers=headers)
-        # add a safety check to check for status code
-        response.raise_for_status()
-        # .json() parses the response into a Python object
-        data = response.json()
-        print(f"Successfully fetched data for location ID {location_id}.")
-        return data
-    # catch errors
-    except requests.exceptions.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err} - Response: {response.text}")
-    except requests.exceptions.ConnectionError as conn_err:
-        print(f"Connection error occurred: {conn_err}")
-    except requests.exceptions.Timeout as timeout_err:
-        print(f"Timeout error occurred: {timeout_err}")
-    except requests.exceptions.RequestException as req_err:
-        print(f"An unexpected request error occurred: {req_err}")
-    except json.JSONDecodeError as json_err:
-        print(f"Error decoding JSON response: {json_err} - Response: {response.text}")
+        print(f"Error decoding JSON response for station name: {e}")
     return None
 
 # now take the data from the previous step and save it to the directory
@@ -118,33 +98,29 @@ def save_raw_data(data: dict, city: str, directory: str):
         print(f"An unexpected error occurred while saving data: {e}")
 
 # Main Execution
-# Uses the three functions defined above
+# Uses the two functions defined above
 
-# run this code only when running as a script, not at import
+# runs this code only when running as a script, not at import
 if __name__ == "__main__":
     if not OPENAQ_API_KEY:
         print("\nERROR: OpenAQ API Key not found.")
         print("Obtain a key and create a .env file in the same directory as this script with the following content:")
         print("OPENAQ_API_KEY='YOUR_ACTUAL_OPENAQ_API_KEY_HERE'")
     else:
-        # Run the function we defined earlier to get the id for the specified city
-        location_id = get_location_id(DEFAULT_CITY)
-        if location_id:
-            TARGET_LOCATION_ID = location_id 
-            print(f"Attempting to fetch data for location ID: {TARGET_LOCATION_ID} ({DEFAULT_CITY})...")
-
-            # Fetch data using the provided location ID
-            air_quality_data = fetch_air_quality_data(TARGET_LOCATION_ID)
-
+        # Run the function we defined earlier to get the data for the specified city
+        station_data = get_station_data(CITY_LAT, CITY_LON)
+        if station_data:
+            # Fetch data using the provided station name
+            air_quality_data = station_data
             # Save data if fetching was successful
             # Ensure 'results' array is not empty
             if air_quality_data and air_quality_data.get('results'): 
-                save_raw_data(air_quality_data, DEFAULT_CITY, RAW_DATA_PATH)
+                save_raw_data(air_quality_data, CITY_NAME, RAW_DATA_PATH_AIR_QUALITY)
                 print("Data ingestion successful!")
             else:
-                print(f"Failed to fetch air quality data or 'results' array was empty for location ID {TARGET_LOCATION_ID}.")
+                print(f"Failed to fetch air quality data or 'results' array was empty for city {CITY_NAME}.")
                
         else:
-            print(f"Could not find a location ID for {DEFAULT_CITY}. No data fetched.")
+            print(f"Could not find an AQ monitoring station for {CITY_LAT, CITY_LON}. No data fetched.")
 
 

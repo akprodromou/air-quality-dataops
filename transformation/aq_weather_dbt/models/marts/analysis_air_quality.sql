@@ -15,7 +15,7 @@ WITH base AS (
         unit,
         last_updated
     -- dependency
-    FROM {{ ref('stg_openaq_data') }}
+    FROM {{ ref('int_openaq_deduped') }}
 )
 
 SELECT *

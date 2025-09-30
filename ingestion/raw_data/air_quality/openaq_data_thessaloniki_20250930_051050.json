@@ -1,0 +1,511 @@
+{
+    "meta": {
+        "name": "openaq-api",
+        "website": "/",
+        "page": 1,
+        "limit": 1000,
+        "found": 4
+    },
+    "results": [
+        {
+            "id": 9626,
+            "name": "GR0018A",
+            "locality": "\u039a\u0395\u039d\u03a4\u03a1\u0399\u039a\u0397 \u039c\u0391\u039a\u0395\u0394\u039f\u039d\u0399\u0391",
+            "timezone": "Europe/Athens",
+            "country": {
+                "id": 80,
+                "code": "GR",
+                "name": "Greece"
+            },
+            "owner": {
+                "id": 4,
+                "name": "Unknown Governmental Organization"
+            },
+            "provider": {
+                "id": 183,
+                "name": "EEA Greece"
+            },
+            "isMobile": false,
+            "isMonitor": true,
+            "instruments": [
+                {
+                    "id": 2,
+                    "name": "Government Monitor"
+                }
+            ],
+            "sensors": [
+                {
+                    "id": 2031204,
+                    "name": "co \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 4,
+                        "name": "co",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "CO mass"
+                    }
+                },
+                {
+                    "id": 4273235,
+                    "name": "no \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 19843,
+                        "name": "no",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "NO mass"
+                    }
+                },
+                {
+                    "id": 29740,
+                    "name": "no2 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 5,
+                        "name": "no2",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "NO\u2082 mass"
+                    }
+                },
+                {
+                    "id": 29739,
+                    "name": "o3 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 3,
+                        "name": "o3",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "O\u2083 mass"
+                    }
+                },
+                {
+                    "id": 29738,
+                    "name": "pm10 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 1,
+                        "name": "pm10",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "PM10"
+                    }
+                },
+                {
+                    "id": 29733,
+                    "name": "pm25 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 2,
+                        "name": "pm25",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "PM2.5"
+                    }
+                },
+                {
+                    "id": 29725,
+                    "name": "so2 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 6,
+                        "name": "so2",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "SO\u2082 mass"
+                    }
+                }
+            ],
+            "coordinates": {
+                "latitude": 40.6337738,
+                "longitude": 22.945287699999998
+            },
+            "licenses": [
+                {
+                    "id": 10,
+                    "name": "ODC-BY",
+                    "attribution": {
+                        "name": "Unknown Governmental Organization",
+                        "url": null
+                    },
+                    "dateFrom": "2020-04-20",
+                    "dateTo": null
+                }
+            ],
+            "bounds": [
+                22.945287699999998,
+                40.6337738,
+                22.945287699999998,
+                40.6337738
+            ],
+            "distance": 706.50717095,
+            "datetimeFirst": {
+                "utc": "2020-04-20T18:00:00Z",
+                "local": "2020-04-20T21:00:00+03:00"
+            },
+            "datetimeLast": {
+                "utc": "2024-01-29T18:00:00Z",
+                "local": "2024-01-29T20:00:00+02:00"
+            }
+        },
+        {
+            "id": 2162781,
+            "name": "AGIA SOFIA",
+            "locality": "monitoring network of Central Macedonia Region",
+            "timezone": "Europe/Athens",
+            "country": {
+                "id": 80,
+                "code": "GR",
+                "name": "Greece"
+            },
+            "owner": {
+                "id": 4,
+                "name": "Unknown Governmental Organization"
+            },
+            "provider": {
+                "id": 70,
+                "name": "EEA"
+            },
+            "isMobile": false,
+            "isMonitor": true,
+            "instruments": [
+                {
+                    "id": 2,
+                    "name": "Government Monitor"
+                }
+            ],
+            "sensors": [
+                {
+                    "id": 7787505,
+                    "name": "co \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 4,
+                        "name": "co",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "CO mass"
+                    }
+                },
+                {
+                    "id": 7774189,
+                    "name": "no \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 19843,
+                        "name": "no",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "NO mass"
+                    }
+                },
+                {
+                    "id": 7774856,
+                    "name": "no2 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 5,
+                        "name": "no2",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "NO\u2082 mass"
+                    }
+                },
+                {
+                    "id": 7774209,
+                    "name": "o3 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 3,
+                        "name": "o3",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "O\u2083 mass"
+                    }
+                },
+                {
+                    "id": 7775947,
+                    "name": "pm10 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 1,
+                        "name": "pm10",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "PM10"
+                    }
+                },
+                {
+                    "id": 7773691,
+                    "name": "pm25 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 2,
+                        "name": "pm25",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "PM2.5"
+                    }
+                },
+                {
+                    "id": 7774766,
+                    "name": "so2 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 6,
+                        "name": "so2",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "SO\u2082 mass"
+                    }
+                }
+            ],
+            "coordinates": {
+                "latitude": 40.633723999745825,
+                "longitude": 22.945099000168426
+            },
+            "licenses": [
+                {
+                    "id": 10,
+                    "name": "ODC-BY",
+                    "attribution": {
+                        "name": "Unknown Governmental Organization",
+                        "url": null
+                    },
+                    "dateFrom": "2016-11-17",
+                    "dateTo": null
+                }
+            ],
+            "bounds": [
+                22.945099000168426,
+                40.633723999745825,
+                22.945099000168426,
+                40.633723999745825
+            ],
+            "distance": 710.49997683,
+            "datetimeFirst": {
+                "utc": "2024-01-28T23:00:00Z",
+                "local": "2024-01-29T01:00:00+02:00"
+            },
+            "datetimeLast": {
+                "utc": "2025-09-30T03:00:00Z",
+                "local": "2025-09-30T06:00:00+03:00"
+            }
+        },
+        {
+            "id": 2162785,
+            "name": "AGIA SOFIA",
+            "locality": "monitoring network of Central Macedonia Region",
+            "timezone": "Europe/Athens",
+            "country": {
+                "id": 80,
+                "code": "GR",
+                "name": "Greece"
+            },
+            "owner": {
+                "id": 4,
+                "name": "Unknown Governmental Organization"
+            },
+            "provider": {
+                "id": 70,
+                "name": "EEA"
+            },
+            "isMobile": false,
+            "isMonitor": true,
+            "instruments": [
+                {
+                    "id": 2,
+                    "name": "Government Monitor"
+                }
+            ],
+            "sensors": [
+                {
+                    "id": 12079197,
+                    "name": "co \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 4,
+                        "name": "co",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "CO mass"
+                    }
+                },
+                {
+                    "id": 8622643,
+                    "name": "no2 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 5,
+                        "name": "no2",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "NO\u2082 mass"
+                    }
+                },
+                {
+                    "id": 8622646,
+                    "name": "o3 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 3,
+                        "name": "o3",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "O\u2083 mass"
+                    }
+                },
+                {
+                    "id": 8622649,
+                    "name": "pm10 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 1,
+                        "name": "pm10",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "PM10"
+                    }
+                },
+                {
+                    "id": 8622640,
+                    "name": "pm25 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 2,
+                        "name": "pm25",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "PM2.5"
+                    }
+                },
+                {
+                    "id": 8622634,
+                    "name": "so2 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 6,
+                        "name": "so2",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "SO\u2082 mass"
+                    }
+                }
+            ],
+            "coordinates": {
+                "latitude": 40.633723999745825,
+                "longitude": 22.945099000168426
+            },
+            "licenses": [
+                {
+                    "id": 10,
+                    "name": "ODC-BY",
+                    "attribution": {
+                        "name": "Unknown Governmental Organization",
+                        "url": null
+                    },
+                    "dateFrom": "2016-11-17",
+                    "dateTo": null
+                }
+            ],
+            "bounds": [
+                22.945099000168426,
+                40.633723999745825,
+                22.945099000168426,
+                40.633723999745825
+            ],
+            "distance": 710.49997683,
+            "datetimeFirst": {
+                "utc": "2024-03-23T16:00:00Z",
+                "local": "2024-03-23T18:00:00+02:00"
+            },
+            "datetimeLast": {
+                "utc": "2025-09-30T03:00:00Z",
+                "local": "2025-09-30T06:00:00+03:00"
+            }
+        },
+        {
+            "id": 3305479,
+            "name": "Depot Thessalonikis",
+            "locality": null,
+            "timezone": "Europe/Athens",
+            "country": {
+                "id": 80,
+                "code": "GR",
+                "name": "Greece"
+            },
+            "owner": {
+                "id": 11509,
+                "name": "Unknown Person"
+            },
+            "provider": {
+                "id": 66,
+                "name": "AirGradient"
+            },
+            "isMobile": false,
+            "isMonitor": false,
+            "instruments": [
+                {
+                    "id": 7,
+                    "name": "AirGradient Sensor"
+                }
+            ],
+            "sensors": [
+                {
+                    "id": 11574395,
+                    "name": "pm1 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 19,
+                        "name": "pm1",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "PM1"
+                    }
+                },
+                {
+                    "id": 11574398,
+                    "name": "pm10 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 1,
+                        "name": "pm10",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "PM10"
+                    }
+                },
+                {
+                    "id": 11574410,
+                    "name": "pm25 \u00b5g/m\u00b3",
+                    "parameter": {
+                        "id": 2,
+                        "name": "pm25",
+                        "units": "\u00b5g/m\u00b3",
+                        "displayName": "PM2.5"
+                    }
+                },
+                {
+                    "id": 11574401,
+                    "name": "relativehumidity %",
+                    "parameter": {
+                        "id": 98,
+                        "name": "relativehumidity",
+                        "units": "%",
+                        "displayName": "RH"
+                    }
+                },
+                {
+                    "id": 11574405,
+                    "name": "temperature c",
+                    "parameter": {
+                        "id": 100,
+                        "name": "temperature",
+                        "units": "c",
+                        "displayName": "Temperature (C)"
+                    }
+                },
+                {
+                    "id": 11574407,
+                    "name": "um003 particles/cm\u00b3",
+                    "parameter": {
+                        "id": 125,
+                        "name": "um003",
+                        "units": "particles/cm\u00b3",
+                        "displayName": "PM0.3 count"
+                    }
+                }
+            ],
+            "coordinates": {
+                "latitude": 40.599201,
+                "longitude": 22.957333
+            },
+            "licenses": [
+                {
+                    "id": 41,
+                    "name": "CC BY 4.0",
+                    "attribution": {
+                        "name": "Unknown Person",
+                        "url": null
+                    },
+                    "dateFrom": "2023-07-15",
+                    "dateTo": null
+                }
+            ],
+            "bounds": [
+                22.957333,
+                40.599201,
+                22.957333,
+                40.599201
+            ],
+            "distance": 4671.67888584,
+            "datetimeFirst": {
+                "utc": "2024-12-08T11:00:00Z",
+                "local": "2024-12-08T13:00:00+02:00"
+            },
+            "datetimeLast": {
+                "utc": "2025-09-30T04:00:00Z",
+                "local": "2025-09-30T07:00:00+03:00"
+            }
+        }
+    ]
+}

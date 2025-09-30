@@ -1,5 +1,9 @@
 -- A staging model is a layer that transforms this raw data into more structured, clean, and
--- queryable "building block" tables with proper column names and data types
+-- queryable "building block" tables with proper column names and data types.
+
+-- However, staging should reflect raw data structure (warts and all). That way, you can always 
+-- debug against the original feed.
+
 -- We materialize as view here, because it's just column renaming + unnesting.
 -- Views are cheap here, and always reflect whatever's in the ingested table.
 {{ config(
@@ -8,7 +12,7 @@
 
 WITH expanded AS (
     SELECT
-        result_item.id AS location_id,
+        CAST(result_item.id AS VARCHAR) AS location_id,
         result_item.name AS location_name,
         result_item.locality AS locality,
         result_item.country.code AS country_code,

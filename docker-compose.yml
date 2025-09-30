@@ -14,9 +14,14 @@ x-airflow-common:
     AIRFLOW__WEBSERVER__RBAC: 'true'
     AIRFLOW__WEBSERVER__BASE_URL: http://localhost:8081
     OPENAQ_API_KEY: ${OPENAQ_API_KEY}
-    OPENAQ_CITY: ${OPENAQ_CITY}
-    DUCKDB_PATH: /opt/airflow/data/air_quality.duckdb
-    RAW_DATA_PATH: /opt/airflow/ingestion/raw_data
+    CITY_NAME: ${CITY_NAME}
+    CITY_LAT: ${CITY_LAT}
+    CITY_LON: ${CITY_LON}
+    WEATHER_FORECAST_DAYS: ${WEATHER_FORECAST_DAYS}
+    WEATHER_TIMEZONE: ${WEATHER_TIMEZONE}
+    DUCKDB_PATH: /opt/airflow/data/air_quality_weather.duckdb
+    RAW_DATA_PATH_AIR_QUALITY: /opt/airflow/ingestion/raw_data/air_quality
+    RAW_DATA_PATH_WEATHER: /opt/airflow/ingestion/raw_data/weather
 
   volumes:
     - ./orchestration:/opt/airflow/orchestration
@@ -41,6 +46,7 @@ services:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
+    # how Docker monitors the health of the PostgreSQL service container
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
       interval: 5s
@@ -53,7 +59,7 @@ services:
     <<: *airflow-common
     command: webserver
     ports:
-    # changed host 8081 -> container 8080 because I was getting errors
+    # changed host to 8081 from 8080 because I was getting errors
       - "8081:8080"  
 
   airflow-scheduler:

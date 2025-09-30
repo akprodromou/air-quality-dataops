@@ -98,3 +98,62 @@ docker-compose up -d
 - For portfolio purposes, the project runs locally or via Docker; no cloud deployment is required.
 
 <!-- We use dbt models to transform the raw JSON data into staging tables (stg_ingested_openaq_data, stg_openaq_data) before applying further transformations. -->
+
+# Pre-Deployment Checklist for Airflow DAGs with DBT
+
+To run tests locally, first export paths:
+```
+export RAW_DATA_PATH_AIR_QUALITY=/Users/anton/Desktop/air-quality-dataops/ingestion/raw_data/air_quality
+export RAW_DATA_PATH_WEATHER=/Users/anton/Desktop/air-quality-dataops/ingestion/raw_data/weather
+export DUCKDB_PATH=/Users/anton/Desktop/air-quality-dataops/data/air_quality_weather.duckdb
+```
+
+1. Python Script Sanity
+
+Run ingestion scripts locally to verify data fetching and file writing:
+
+python ingestion/ingest_openaq_data.py
+python ingestion/ingest_weather_data.py
+
+Check that raw JSON/CSV files exist in:
+
+ingestion/raw_data/air_quality/
+ingestion/raw_data/weather/
+
+Ensure data shape is as expected (e.g., correct keys in JSON).
+
+2. DBT Model Sanity
+
+Navigate to your DBT project:
+
+cd transformation/aq_weather_dbt
+
+Check configuration and connection:
+
+dbt debug --profiles-dir .
+
+Run all staging and analysis models:
+
+dbt run --models stg_ingested_openaq_data stg_openaq_data analysis_air_quality \
+          stg_ingested_weather_data stg_weather_data analysis_weather
+
+Run tests:
+
+dbt test
+
+This will catch:
+
+- Misconfigured profiles or database connections
+- SQL compilation/run errors
+- Failed column tests (nulls, accepted values, unique constraints)
+
+- The stg_ingested_* models mirror the API schema. We don’t touch them except for flattening/renaming. That way, we can always debug against the original feed.
+
+- The staging model (stg_openaq_data) is doing exactly what it should. This is where you remove obvious junk (null IDs, invalid country codes, etc.) and apply basic transformations
+
+✅ Extracting and flattening nested JSON structures
+✅ Renaming columns to business-friendly names
+✅ Light filtering (specific parameters only)
+✅ Standardizing data types
+
+- Intermediate (sometimes called int_ or “core” models): this is the layer where you enforce data quality rules like deduplication, keeping the latest record, or normalizing across sources. It gives you predictable, clean tables for downstream marts.

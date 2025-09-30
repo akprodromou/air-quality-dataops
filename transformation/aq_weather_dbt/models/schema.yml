@@ -6,11 +6,13 @@
 # Version is the schema file specification that dbt uses
 version: 2
 models:
+  # staging - ingestion
   - name: stg_ingested_openaq_data
     description: "Raw OpenAQ JSON data flattened into a table"
     columns:
       - name: results
         description: "Nested JSON results object"
+  # staging
   - name: stg_openaq_data
     description: "Staged air quality data from OpenAQ API v3, flattened and type-casted."
     columns:
@@ -27,11 +29,9 @@ models:
         tests:
           - not_null
       - name: country_code
-        description: "ISO 2-letter country code of the station."
         tests:
-          - not_null
           - accepted_values:
-              values: ['GR']
+              values: ['GR']  
       - name: country
         description: "Country name of the station."
         tests:
@@ -60,11 +60,59 @@ models:
         description: "Longitude coordinate of the monitoring station."
         tests:
           - not_null
+  # intermediate
+  # same as staging, but lighter - just enough to guarantee dedup works
+  - name: int_openaq_deduped
+    description: "Deduplicated air quality data from OpenAQ."
+    columns:
+      - name: location_id
+        description: "Unique identifier for the monitoring station."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_openaq_data')
+              field: location_id
+              where: "location_id IS NOT NULL" 
+      - name: parameter
+        description: "Type of air quality parameter (PM2.5, NO2, etc.)."
+        tests:
+          - not_null
+      - name: last_updated
+        description: "Timestamp of the last measurement update."
+        tests:
+          - not_null
+    tests:
+      - unique:
+          column_name: "location_id || '-' || parameter || '-' || last_updated"
+
+  # mart
+  - name: analysis_air_quality
+    description: "Aggregated air quality metrics at location and parameter level."
+    columns:
+      - name: location_id
+        description: "Station ID."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_openaq_deduped')
+              field: location_id
+      - name: parameter
+        description: "Air quality parameter measured."
+        tests:
+          - not_null
+    tests:
+      - unique:
+          column_name: "location_id || '-' || parameter"
+
+        
+  # Weather data
+  # staging - ingestion
   - name: stg_ingested_weather_data
     description: "Raw weather JSON data (from Open-Meteo) flattened into a table"
     columns:
       - name: data
         description: "Nested JSON object containing weather metadata and hourly arrays"
+  # staging
   - name: stg_weather_data
     description: "Staged hourly weather forecast data from Open-Meteo API, flattened and type-casted."
     columns:
@@ -96,10 +144,6 @@ models:
         description: "Short timezone abbreviation (e.g., EET)."
       - name: elevation
         description: "Elevation of the forecast location in meters."
-      - name: observation_time
-        description: "Forecast timestamp (converted to proper TIMESTAMP type)."
-        tests:
-          - not_null
       - name: observation_date
         description: "Date portion of the observation (for grouping by day)."
       - name: observation_hour

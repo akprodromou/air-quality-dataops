@@ -4,8 +4,6 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 import subprocess
-import tempfile
-import os
 
 # Project root inside the container, i.e. air-quality-dataops <- orchestration
 project_root = Path(__file__).parent.parent
@@ -22,6 +20,13 @@ def ingest_openaq():
         check=True
     )
 
+def ingest_weather_data():
+    subprocess.run(
+        ["python3", str(project_root / "ingestion/ingest_weather_data.py")],
+        # prevent the main program from silently continuing after a critical failure in ingestion
+        check=True
+    )
+
 # Runs DBT transformations
 # stg_ingested_openaq_data: runs first and converts raw JSON to flattened table (i.e. dumps the data in the warehouse)
 # stg_openaq_data cleans, standarizes column names, to make it queryable and understandable
@@ -31,10 +36,18 @@ def run_dbt():
         [
             "dbt", "run",
             # tell dbt where dbt_project.yml is located
-            "--project-dir", str(project_root / "transformation/air_quality_dbt"),
+            "--project-dir", str(project_root / "transformation/aq_weather_dbt"),
             # tell dbt where profiles.yml is located
-            "--profiles-dir", str(project_root / "transformation/air_quality_dbt"),
-            "--models", "stg_ingested_openaq_data stg_openaq_data analysis_air_quality"
+            "--profiles-dir", str(project_root / "transformation/aq_weather_dbt"),
+            "--models", (
+                "stg_ingested_openaq_data "
+                "stg_openaq_data "
+                "int_openaq_deduped "
+                "analysis_air_quality "
+                "stg_ingested_weather_data "
+                "stg_weather_data "
+                "analysis_weather"
+            )
         ],
         check=True
     )
@@ -43,7 +56,7 @@ def run_dbt():
 
 # default_args is a dictionary of parameters that define default behavior for all tasks in our DAG
 default_args = {
-    # Error handling, as a precaution
+    # Error handling for airflow tasks, as a precaution
     "retries": 3,
     "retry_delay": timedelta(minutes=5),
     "exponential_backoff": True,
@@ -52,19 +65,24 @@ default_args = {
 
 with DAG(
     dag_id="air_quality_pipeline",
-    description="Airflow DAG to ingest OpenAQ data, run DBT, and generate visualizations",
+    description="Airflow DAG to ingest OpenAQ, Open Weather data, run DBT, and generate visualizations",
     start_date=datetime(2025, 1, 1),
     schedule_interval="@daily",
     default_args=default_args,
     # only start running for the next scheduled interval and ingore missed past ones
     catchup=False,
-    tags=["air_quality", "dataops"]
+    tags=["air_quality", "weather", "dataops"]
 ) as dag:
 
     # Task definitions
-    ingest_task = PythonOperator(
+    ingest_aq_data_task = PythonOperator(
         task_id="ingest_openaq_data",
         python_callable=ingest_openaq,
+    )
+
+    ingest_weather_data_task = PythonOperator(
+        task_id="ingest_weather_data",
+        python_callable=ingest_weather_data,
     )
 
     dbt_task = PythonOperator(
@@ -79,4 +97,4 @@ with DAG(
     )
 
     # Task dependencies
-    ingest_task >> dbt_task >> task_visualizations
+    ingest_aq_data_task >> ingest_weather_data_task >> dbt_task >> task_visualizations

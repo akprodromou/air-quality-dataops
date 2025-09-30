@@ -31,6 +31,7 @@ def generate_visualizations(output_dir="visualizations"):
         conn = duckdb.connect(str(data_path / "air_quality.duckdb"))
 
         # Updated query to use absolute path for the JSON files
+        # Why the json files and not the clean ones?
         ingestion_path = project_root / "ingestion/raw_data"
         json_pattern = str(ingestion_path / "openaq_data_thessaloniki_*.json")
         
