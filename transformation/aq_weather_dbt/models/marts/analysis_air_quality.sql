@@ -1,6 +1,6 @@
 -- Materialized as an incremental table, i.e. updated by processing only new or changed data since the last run
 {{ config(
-    materialized='view'
+    materialized='incremental'
 ) }}
 
 WITH parameter_metadata AS (
@@ -19,8 +19,9 @@ WITH parameter_metadata AS (
 SELECT
     s.sensor_id,
     s.value,
-    s.location_id,
     s.parameter,
+    s.reading_date,
+    s.location_id,
     m.unit,
     m.display_name,
     m.category

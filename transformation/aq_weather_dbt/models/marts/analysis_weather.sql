@@ -17,8 +17,8 @@ WITH base AS (
         windspeed_10m,
         winddirection_10m,
         precipitation,
-        -- PM2.5 heuristic
-        (0.461926 * temperature_2m - 1.495705 * windspeed_10m) AS predicted_pm10
+        (- 0.577802 * temperature_2m + 0.122864 * relativehumidity_2m 
+        + 0.397465 * precipitation - 0.620459 * windspeed_10m + 0.005832 * winddirection_10m) AS predicted_pm10
     FROM {{ ref('stg_weather_data') }}
 )
 

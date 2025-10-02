@@ -1,14 +1,15 @@
 -- models/intermediate/int_openaq_deduped.sql
 
 {{ config(
-    materialized='view'  
+    materialized='ephemeral'  
 ) }}
 
 SELECT DISTINCT
     sensor_id,
     value,
-    location_id,
-    parameter
+    parameter,
+    reading_date,
+    location_id
 FROM {{ ref('stg_openaq_data') }}
 
 

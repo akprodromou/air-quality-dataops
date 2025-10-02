@@ -7,10 +7,11 @@ aq_weather_dbt:
     dev:
       type: duckdb
       # Uncomment to run locally
-      # path: './data/air_quality.duckdb'
+      # path: './data/air_quality_weather.duckdb'
       # external_root: './ingestion/raw_data'
       path: "{{ env_var('DUCKDB_PATH', '../../data/air_quality_weather.duckdb') }}"
       external_root: "{{ env_var('RAW_DATA_PATH', '../../ingestion/raw_data') }}"
+      schema: main
       external_tables:
         enabled: true
         file_format_options:

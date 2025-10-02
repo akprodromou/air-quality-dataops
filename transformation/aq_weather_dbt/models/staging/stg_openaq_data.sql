@@ -4,14 +4,16 @@
 -- However, staging should reflect raw data structure (warts and all). That way, you can always 
 -- debug against the original feed.
 
--- We materialize as view here, because it's just column renaming + unnesting.
--- Views are cheap here, and always reflect whatever's in the ingested table.
+{{ config(
+    materialized='table'
+) }}
 
 WITH expanded AS (
     SELECT
         result_item.sensorsId AS sensor_id,
         result_item.value AS value,
-        result_item.locationsId AS location_id
+        result_item.locationsId AS location_id,
+        CAST(result_item.datetime.utc AS DATE) AS reading_date
     FROM {{ ref('stg_ingested_openaq_data') }},
          UNNEST(results) AS t(result_item)
 ),
@@ -25,10 +27,12 @@ sensors_mapping AS (
     FROM {{ ref('stg_ingested_openaq_data') }}
 )
 
-SELECT e.sensor_id,
-       e.value,
-       e.location_id,
-       s.parameter
+SELECT 
+        e.sensor_id,
+        e.value,
+        s.parameter,
+        e.reading_date,
+        e.location_id,
 FROM expanded e
 LEFT JOIN sensors_mapping s
        ON e.sensor_id = s.sensor_id
