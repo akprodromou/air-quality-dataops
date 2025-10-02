@@ -170,3 +170,7 @@ https://www.eionet.europa.eu/aqportal/doc/IPR%20guidance_2.0.1_final.pdf
 Micrograms per cubic meter
 https://eeadmz1-downloads-webapp.azurewebsites.net/
 European Environment Agency
+
+## Weather API
+
+https://open-meteo.com/

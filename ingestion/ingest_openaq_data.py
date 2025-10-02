@@ -71,35 +71,35 @@ def get_station_id(city_lat: int, city_lon: int) -> int | None:
                 if dt_last_str:
                     dt_to = datetime.fromisoformat(dt_last_str.replace("Z", "+00:00")).date()
                     # Check if the station was updated in the last 24hrs
-                    if dt_to > date.today() - timedelta(days=1):
+                    if dt_to > date.today() - timedelta(days=2):
                         # print(item)
                         station = item
                         station_name = station.get('name')
                         station_id = station.get('id')
                         sensors_dict = {}
-                        pm10_sensor_id = None
+                        pm25_sensor_id = None
 
                         for sensor in station['sensors']:
                             sensors_dict[sensor['parameter']['name']] = sensor['id']
-                            if sensor['parameter']['name'] == 'pm10':
-                                pm10_sensor_id = sensor['id']
-                        if pm10_sensor_id:
+                            if sensor['parameter']['name'] == 'pm25':
+                                pm25_sensor_id = sensor['id']
+                        if pm25_sensor_id:
                             print(
                                 f"Found station named {station_name} "
                                 f"for coordinates {city_lat},{city_lon} "
                                 f"with id = {station_id}.\n"
-                                f"Sensor id for PM10 is {pm10_sensor_id}."
+                                f"Sensor id for PM25 is {pm25_sensor_id}."
                             )
                         else:
-                            print(f"No PM10 station found for station {station_name}.")
+                            print(f"No PM25 station found for station {station_name}.")
 
                         # Return all three values
-                        return sensors_dict, pm10_sensor_id, station_id    
+                        return sensors_dict, pm25_sensor_id, station_id    
             print(f"No updated station found for {CITY_NAME}")
-            return None
+            return {}, None, None
         else:
             print(f"No station found for coordinates {city_lat},{city_lon}.")
-            return None
+            return {}, None, None
     # catch any HTTP request errors
     except requests.exceptions.RequestException as e:
         print(f"Error fetching station name for coordinates {city_lat},{city_lon}: {e}")
@@ -150,7 +150,7 @@ if __name__ == "__main__":
         print("OPENAQ_API_KEY='YOUR_ACTUAL_OPENAQ_API_KEY_HERE'")
     else:
         # Run the function we defined earlier to get the data for the specified city
-        sensors_dict, pm10_sensor_id, station_id = get_station_id(CITY_LAT, CITY_LON)
+        sensors_dict, pm25_sensor_id, station_id = get_station_id(CITY_LAT, CITY_LON)
         if station_id:
             get_raw_data(station_id, CITY_NAME, RAW_DATA_PATH_AIR_QUALITY, sensors_dict)
             print("Data ingestion successful!")      

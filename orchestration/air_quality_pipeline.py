@@ -38,16 +38,7 @@ def run_dbt():
             # tell dbt where dbt_project.yml is located
             "--project-dir", str(project_root / "transformation/aq_weather_dbt"),
             # tell dbt where profiles.yml is located
-            "--profiles-dir", str(project_root / "transformation/aq_weather_dbt"),
-            "--models", (
-                "stg_ingested_openaq_data "
-                "stg_openaq_data "
-                "int_openaq_deduped "
-                "analysis_air_quality "
-                "stg_ingested_weather_data "
-                "stg_weather_data "
-                "analysis_weather"
-            )
+            "--profiles-dir", str(project_root / "transformation/aq_weather_dbt")
         ],
         check=True
     )

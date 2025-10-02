@@ -105,7 +105,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="imports" class="level2">
 <h2 class="anchored" data-anchor-id="imports">Imports</h2>
 <p>Let’s start by importing the libraries we are going to use:</p>
-<div id="22a2a4e2" class="cell" data-execution_count="1">
+<div id="52ecfc10" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -117,13 +117,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>matplotlib inline</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>And now let’s import our weather data:</p>
-<div id="589789ad" class="cell" data-execution_count="2">
+<div id="1e2198b8" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data_raw_weather <span class="op">=</span> pd.read_csv(</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"data/historic_data/thessaloniki-meteo-2023.csv"</span>,</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    header<span class="op">=</span><span class="dv">0</span>      </span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>data_raw_weather.tail()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="244">
+<div class="cell-output cell-output-display" data-execution_count="2">
 <div>
 
 
@@ -240,14 +240,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>and AQ data:</p>
-<div id="dcc0bb80" class="cell" data-execution_count="3">
+<div id="1e5f0025" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the JSON Lines file</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>data_raw_aq <span class="op">=</span> pd.read_json(<span class="st">"data/historic_data/Thessaloniki_PM25_2023.json"</span>, lines<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>data_raw_aq <span class="op">=</span> data_raw_aq.clean_names(remove_special<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>data_raw_aq.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="245">
+<div class="cell-output cell-output-display" data-execution_count="3">
 <div>
 
 
@@ -359,7 +359,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="weather-dataframe" class="level4">
 <h4 class="anchored" data-anchor-id="weather-dataframe">Weather dataframe</h4>
 <p>I’ll start by dropping the columns I don’t need and standarizing column names:</p>
-<div id="6116cb12" class="cell" data-execution_count="4">
+<div id="4ec3356b" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>data_raw_weather <span class="op">=</span> data_raw_weather.drop([</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'T_max'</span>, <span class="st">'T_min'</span>, <span class="st">'RH_max'</span>,</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'RH_min'</span>,<span class="st">'Prs_max'</span>, <span class="st">'Prs_min'</span>,</span>
@@ -370,7 +370,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="aq-dataframe" class="level4">
 <h4 class="anchored" data-anchor-id="aq-dataframe">AQ Dataframe</h4>
-<div id="1fd496f6" class="cell" data-execution_count="5">
+<div id="7b1809ab" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data_raw_aq <span class="op">=</span> data_raw_aq.clean_names(remove_special<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert 'Value' to numeric (remove extra quotes)</span></span>
@@ -380,7 +380,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>data_raw_aq[<span class="st">'start'</span>] <span class="op">=</span> pd.to_datetime(data_raw_aq[<span class="st">'start'</span>], unit<span class="op">=</span><span class="st">'ms'</span>).dt.strftime(<span class="st">'</span><span class="sc">%d</span><span class="st">/%m/%y'</span>)</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>data_raw_aq.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="247">
+<div class="cell-output cell-output-display" data-execution_count="5">
 <div>
 
 
@@ -491,7 +491,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="weather-dataframe-1" class="level4">
 <h4 class="anchored" data-anchor-id="weather-dataframe-1">Weather dataframe</h4>
 <p>Let’s check the number of na values:</p>
-<div id="295cdc1b" class="cell" data-execution_count="6">
+<div id="cbc34350" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate missing values</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>missing_values_weather <span class="op">=</span> data_raw_weather.isnull().<span class="bu">sum</span>()</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"""Missing values per column in Weather dataset: </span></span>
@@ -511,7 +511,7 @@ dtype: int64</code></pre>
 <section id="aq-dataframe-1" class="level4">
 <h4 class="anchored" data-anchor-id="aq-dataframe-1">AQ Dataframe</h4>
 <p>Glancing through the data, I noticed that there are data points marked as ‘-9999’, meaning they are null. I’ll keep them for the time being, so that joining the tables will still work, and remove them once the join has been done.</p>
-<div id="318c48b3" class="cell" data-execution_count="7">
+<div id="aa827e6d" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># data_raw_aq = data_raw_aq.replace('-9999', np.nan)</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate missing values</span></span>
@@ -547,7 +547,7 @@ dtype: int64</code></pre>
 <section id="weather-dataframe-2" class="level4">
 <h4 class="anchored" data-anchor-id="weather-dataframe-2">Weather dataframe</h4>
 <p>Let’s check the data types of the columns:</p>
-<div id="13d83428" class="cell" data-execution_count="8">
+<div id="97dba986" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>data_raw_weather.info()</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Wind direction (dwd) column values:"</span>)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data_raw_weather[<span class="st">'dwd'</span>].unique())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -570,7 +570,7 @@ Wind direction (dwd) column values:
 </div>
 </div>
 <p>I therefore need to: * Convert date from object to datetime type * Assign wind directions to a number, as this is how they are given in the weather predictions of Open Meteo.</p>
-<div id="91c6c624" class="cell" data-execution_count="9">
+<div id="b793aafa" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># object to datetime conversion</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>data_raw_weather[<span class="st">'date'</span>] <span class="op">=</span> pd.to_datetime(data_raw_weather[<span class="st">'date'</span>], dayfirst<span class="op">=</span><span class="va">True</span>, errors<span class="op">=</span><span class="st">'coerce'</span>)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -600,14 +600,14 @@ Wind direction (dwd) column values:
 <span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert list to degrees</span></span>
 <span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>data_raw_weather[<span class="st">'dwd'</span>] <span class="op">=</span> [direction_to_deg[wind_dir] <span class="cf">for</span> wind_dir <span class="kw">in</span> data_raw_weather[<span class="st">'dwd'</span>]]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>/var/folders/6b/f7ny0f697v9_3ymryd5sqsmr0000gn/T/ipykernel_2079/483127566.py:2: UserWarning:
+<pre><code>/var/folders/6b/f7ny0f697v9_3ymryd5sqsmr0000gn/T/ipykernel_2076/483127566.py:2: UserWarning:
 
 Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
 </code></pre>
 </div>
 </div>
 <p>I’ll also simplify the date format, as I’m interested only in the date:</p>
-<div id="51e2ba93" class="cell" data-execution_count="10">
+<div id="9b8491bc" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>data_raw_weather[<span class="st">'date'</span>] <span class="op">=</span> pd.to_datetime(data_raw_weather[<span class="st">'date'</span>]).dt.strftime(<span class="st">"</span><span class="sc">%d</span><span class="st">/%m/%y"</span>)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>data_raw_weather.info()</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>data_raw_weather.describe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -626,7 +626,7 @@ Data columns (total 6 columns):
 dtypes: float64(5), object(1)
 memory usage: 17.2+ KB</code></pre>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="252">
+<div class="cell-output cell-output-display" data-execution_count="10">
 <div>
 
 
@@ -713,9 +713,9 @@ memory usage: 17.2+ KB</code></pre>
 </div>
 </div>
 <p>Let’s check the final result:</p>
-<div id="4635be26" class="cell" data-execution_count="11">
+<div id="69d15a1d" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>data_raw_weather.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="253">
+<div class="cell-output cell-output-display" data-execution_count="11">
 <div>
 
 
@@ -787,7 +787,7 @@ memory usage: 17.2+ KB</code></pre>
 <section id="aq-dataframe-2" class="level4">
 <h4 class="anchored" data-anchor-id="aq-dataframe-2">AQ dataframe</h4>
 <p>Let’s check the data types of the columns:</p>
-<div id="3b1a679d" class="cell" data-execution_count="12">
+<div id="80150636" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>data_raw_aq.info()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
@@ -812,7 +812,7 @@ memory usage: 821.3+ KB</code></pre>
 </div>
 </div>
 <p>I’ll keep only the attributes I’m interested in (date and PM2.5 values):</p>
-<div id="3074d9b0" class="cell" data-execution_count="13">
+<div id="925f6d00" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Group every 24 rows (from hourly to daily average)</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># PM2.5 values</span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co"># daily_avg = data_raw_aq.groupby(data_raw_aq.index // 24)['value'].mean().reset_index(drop=True)</span></span>
@@ -838,7 +838,7 @@ memory usage: 821.3+ KB</code></pre>
 <span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>data_raw_aq <span class="op">=</span> pd.DataFrame({<span class="st">'date'</span>: daily_dates, <span class="st">'pm25_value'</span>: daily_avg})</span>
 <span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>data_raw_aq.tail(<span class="dv">20</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="255">
+<div class="cell-output cell-output-display" data-execution_count="13">
 <div>
 
 
@@ -962,11 +962,11 @@ memory usage: 821.3+ KB</code></pre>
 </section>
 <section id="dataframes-join" class="level2">
 <h2 class="anchored" data-anchor-id="dataframes-join">Dataframes Join</h2>
-<div id="a1097476" class="cell" data-execution_count="14">
+<div id="a7edbfbf" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>merged_df <span class="op">=</span> pd.merge(data_raw_weather, data_raw_aq, on<span class="op">=</span><span class="st">'date'</span>, how<span class="op">=</span><span class="st">'inner'</span>)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>merged_df.head(<span class="dv">20</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="256">
+<div class="cell-output cell-output-display" data-execution_count="14">
 <div>
 
 
@@ -1191,7 +1191,7 @@ memory usage: 821.3+ KB</code></pre>
 </div>
 </div>
 <p>And we can now remove na values:</p>
-<div id="f3dc5ad4" class="cell" data-execution_count="15">
+<div id="765e0ef5" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df_clean <span class="op">=</span> merged_df.dropna()</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>missing_values_aq <span class="op">=</span> df_clean.isnull().<span class="bu">sum</span>()</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"""Missing values per column in cleaned dataset: </span></span>
@@ -1227,7 +1227,7 @@ memory usage: 20.3+ KB</code></pre>
 </section>
 <section id="data-exploration" class="level2">
 <h2 class="anchored" data-anchor-id="data-exploration">Data Exploration</h2>
-<div id="a6c378a6" class="cell" data-execution_count="16">
+<div id="c16e06ff" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>sns.pairplot(df_clean, height<span class="op">=</span><span class="fl">1.2</span>)</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
@@ -1240,7 +1240,7 @@ memory usage: 20.3+ KB</code></pre>
 </div>
 <p>The pairplot shows a small correlation of PM25 with humidity and precipitation.</p>
 <!-- ### Pm10 over time -->
-<div id="0d45dbbe" class="cell" data-execution_count="17">
+<div id="47b0f1f1" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">5</span>))</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>plt.plot(df_clean[<span class="st">'date'</span>], df_clean[<span class="st">'pm25_value'</span>], marker<span class="op">=</span><span class="st">'o'</span>, label<span class="op">=</span><span class="st">'pm10'</span>)</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Date/Time'</span>)</span>
@@ -1261,7 +1261,7 @@ memory usage: 20.3+ KB</code></pre>
 <section id="training-and-testing-data" class="level2">
 <h2 class="anchored" data-anchor-id="training-and-testing-data">Training and Testing data</h2>
 <p>Now that we’ve explored the data a bit, we’ll go ahead and split the data into training and testing sets.</p>
-<div id="1c7b471c" class="cell" data-execution_count="18">
+<div id="52fee3ee" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> df_clean.drop(columns<span class="op">=</span>[<span class="st">'pm25_value'</span>, <span class="st">'date'</span>])</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> df_clean[<span class="st">'pm25_value'</span>]</span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1269,10 +1269,10 @@ memory usage: 20.3+ KB</code></pre>
 </div>
 <section id="training-the-model" class="level3">
 <h3 class="anchored" data-anchor-id="training-the-model">Training the Model</h3>
-<div id="78c9a4f1" class="cell" data-execution_count="19">
+<div id="9a02a66c" class="cell" data-execution_count="19">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>lm <span class="op">=</span> LinearRegression()</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>lm.fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="261">
+<div class="cell-output cell-output-display" data-execution_count="19">
 <style>#sk-container-id-1 {
   /* Definition of color scheme common for light and dark mode */
   --sklearn-color-text: #000;
@@ -1833,11 +1833,11 @@ document.querySelectorAll('.fa-regular.fa-copy').forEach(function(element) {
 </div>
 </div>
 <p>And now let’s get the coefficients:</p>
-<div id="ff1ea5b7" class="cell" data-execution_count="20">
+<div id="fdf0bf52" class="cell" data-execution_count="20">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>lm.coef_</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>lm.feature_names_in_ </span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(lm.coef_, X.columns, columns <span class="op">=</span> [<span class="st">'Correlation'</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="262">
+<div class="cell-output cell-output-display" data-execution_count="20">
 <div>
 
 
@@ -1879,11 +1879,11 @@ document.querySelectorAll('.fa-regular.fa-copy').forEach(function(element) {
 <section id="evaluating-the-model" class="level3">
 <h3 class="anchored" data-anchor-id="evaluating-the-model">Evaluating the Model</h3>
 <p>I’ll get the predictions first:</p>
-<div id="41f281d0" class="cell" data-execution_count="21">
+<div id="49ece51a" class="cell" data-execution_count="21">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> lm.predict(X_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s evaluate our model performance by calculating the residual sum of squares and the explained variance score (R^2).</p>
-<div id="ccf8cdfb" class="cell" data-execution_count="22">
+<div id="cdf464f5" class="cell" data-execution_count="22">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>mae <span class="op">=</span> mean_absolute_error(predictions, y_test)</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>mse <span class="op">=</span> mean_squared_error(predictions, y_test)</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>rmse <span class="op">=</span> np.sqrt(mean_squared_error(predictions, y_test))</span>
@@ -1901,7 +1901,7 @@ RMSE: 7.663666811151807</code></pre>
 <section id="residuals" class="level3">
 <h3 class="anchored" data-anchor-id="residuals">Residuals</h3>
 <p>Let’s quickly explore the residuals to make sure everything was okay with our data.</p>
-<div id="75863a31" class="cell" data-execution_count="23">
+<div id="9abe72a6" class="cell" data-execution_count="23">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>sns.displot(y_test <span class="op">-</span> predictions, bins <span class="op">=</span> <span class="dv">50</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
