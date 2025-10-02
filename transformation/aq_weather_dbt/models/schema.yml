@@ -17,92 +17,76 @@ models:
     description: "Staged air quality data from OpenAQ API v3, flattened and type-casted."
     columns:
       - name: location_id
-        description: "Unique identifier for the air quality monitoring station."
-        tests:
-          - not_null
-      - name: location_name
-        description: "Name of the monitoring station."
-        tests:
-          - not_null
-      - name: locality
-        description: "City/locality where the station is located."
-        tests:
-          - not_null
-      - name: country_code
-        tests:
-          - accepted_values:
-              values: ['GR']  
-      - name: country
-        description: "Country name of the station."
+        description: "Unique identifier of the monitoring location (station) from OpenAQ."
         tests:
           - not_null
       - name: sensor_id
-        description: "Unique identifier for the specific sensor measuring this parameter."
+        description: "Unique identifier of the sensor measuring a specific pollutant."
+        tests:
+          - not_null
+      - name: value
+        description: "Latest recorded measurement value from the sensor."
         tests:
           - not_null
       - name: parameter
-        description: "Type of air quality parameter (e.g., PM2.5, NO2, O3)."
+        description: "Air quality parameter measured by the sensor (e.g., pm10, pm25, no2, co)."
         tests:
           - not_null
-      - name: unit
-        description: "Unit of measurement (e.g., µg/m³)."
-        tests:
-          - not_null
-      - name: last_updated
-        description: "Timestamp of the last update for the measurement."
-        tests:
-          - not_null
-      - name: latitude
-        description: "Latitude coordinate of the monitoring station."
-        tests:
-          - not_null
-      - name: longitude
-        description: "Longitude coordinate of the monitoring station."
-        tests:
-          - not_null
+
   # intermediate
   # same as staging, but lighter - just enough to guarantee dedup works
   - name: int_openaq_deduped
     description: "Deduplicated air quality data from OpenAQ."
     columns:
       - name: location_id
-        description: "Unique identifier for the monitoring station."
+        description: "Unique identifier of the monitoring location (station) from OpenAQ."
         tests:
           - not_null
-          - relationships:
-              to: ref('stg_openaq_data')
-              field: location_id
-              where: "location_id IS NOT NULL" 
+      - name: sensor_id
+        description: "Unique identifier of the sensor measuring a specific pollutant."
+        tests:
+          - not_null
+      - name: value
+        description: "Latest recorded measurement value from the sensor."
+        tests:
+          - not_null
       - name: parameter
-        description: "Type of air quality parameter (PM2.5, NO2, etc.)."
+        description: "Air quality parameter measured by the sensor (e.g., pm10, pm25, no2, co)."
         tests:
           - not_null
-      - name: last_updated
-        description: "Timestamp of the last measurement update."
-        tests:
-          - not_null
-    tests:
-      - unique:
-          column_name: "location_id || '-' || parameter || '-' || last_updated"
 
   # mart
   - name: analysis_air_quality
     description: "Aggregated air quality metrics at location and parameter level."
     columns:
+      - name: sensor_id
+        description: "Unique identifier of the sensor measuring a specific pollutant."
+        tests:
+          - not_null
+      - name: value
+        description: "Latest recorded measurement value from the sensor."
+        tests:
+          - not_null
       - name: location_id
-        description: "Station ID."
+        description: "Unique identifier of the monitoring location (station) from OpenAQ."
         tests:
           - not_null
-          - relationships:
-              to: ref('int_openaq_deduped')
-              field: location_id
       - name: parameter
-        description: "Air quality parameter measured."
+        description: "Air quality parameter measured by the sensor (e.g., pm10, pm25, no2, co)."
         tests:
           - not_null
-    tests:
-      - unique:
-          column_name: "location_id || '-' || parameter"
+      - name: unit
+        description: "Unit of measurement for the parameter (e.g., µg/m³)."
+        tests:
+          - not_null
+      - name: display_name
+        description: "Human-readable name for the parameter (e.g., 'Particulate Matter 2.5µm')."
+        tests:
+          - not_null
+      - name: category
+        description: "High-level category of the pollutant (e.g., 'PM' for particulate matter or 'Gas' for gaseous pollutants)."
+        tests:
+          - not_null
 
         
   # Weather data

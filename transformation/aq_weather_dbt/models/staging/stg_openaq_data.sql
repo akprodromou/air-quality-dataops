@@ -6,34 +6,30 @@
 
 -- We materialize as view here, because it's just column renaming + unnesting.
 -- Views are cheap here, and always reflect whatever's in the ingested table.
-{{ config(
-    materialized='view'
-) }}
 
 WITH expanded AS (
     SELECT
-        CAST(result_item.id AS VARCHAR) AS location_id,
-        result_item.name AS location_name,
-        result_item.locality AS locality,
-        result_item.country.code AS country_code,
-        result_item.country.name AS country,
-        result_item.coordinates.latitude AS latitude,
-        result_item.coordinates.longitude AS longitude,
-        result_item.timezone AS timezone,
-        result_item.provider.name AS provider_name,
-        result_item.datetimeLast->>'utc' AS last_updated,
-        sensor_item.id AS sensor_id,
-        LOWER(TRIM(sensor_item.parameter.name)) AS parameter,
-        sensor_item.parameter.units AS unit,
-        sensor_item.parameter.displayName AS parameter_display_name
-    -- dependency defined and read by DAG
+        result_item.sensorsId AS sensor_id,
+        result_item.value AS value,
+        result_item.locationsId AS location_id
     FROM {{ ref('stg_ingested_openaq_data') }},
-         UNNEST(results) AS t(result_item),
-         UNNEST(result_item.sensors) AS s(sensor_item)
-    WHERE LOWER(TRIM(sensor_item.parameter.name)) IN ('pm25','pm10','o3','no2','so2','co')
-    ORDER BY location_id, parameter
+         UNNEST(results) AS t(result_item)
+),
+
+sensors_mapping AS (
+    SELECT
+        unnest(['co', 'no', 'no2', 'o3', 'pm10', 'pm25', 'so2']) AS parameter,
+        unnest([sensors_dict.co, sensors_dict."no", sensors_dict.no2, 
+                sensors_dict.o3, sensors_dict.pm10, sensors_dict.pm25, 
+                sensors_dict.so2]) AS sensor_id
+    FROM {{ ref('stg_ingested_openaq_data') }}
 )
 
-SELECT *
-FROM expanded
-ORDER BY location_id, parameter
+SELECT e.sensor_id,
+       e.value,
+       e.location_id,
+       s.parameter
+FROM expanded e
+LEFT JOIN sensors_mapping s
+       ON e.sensor_id = s.sensor_id
+ORDER BY e.location_id, s.parameter

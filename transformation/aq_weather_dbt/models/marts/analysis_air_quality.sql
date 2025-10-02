@@ -1,25 +1,30 @@
 -- Materialized as an incremental table, i.e. updated by processing only new or changed data since the last run
 {{ config(
-    materialized='incremental',
-    unique_key=['location_id', 'parameter', 'last_updated']
+    materialized='view'
 ) }}
 
-WITH base AS (
-    SELECT
-        current_date AS run_date,
-        location_id,
-        location_name,
-        locality,
-        country,
-        parameter,
-        unit,
-        last_updated
-    -- dependency
-    FROM {{ ref('int_openaq_deduped') }}
+WITH parameter_metadata AS (
+    SELECT *
+    FROM (VALUES
+        ('pm10', 'µg/m³', 'Particulate Matter 10µm', 'PM'),
+        ('pm25', 'µg/m³', 'Particulate Matter 2.5µm', 'PM'),
+        ('co', 'µg/m³', 'CO mass', 'Gas'),
+        ('no', 'µg/m³', 'NO mass', 'Gas'),
+        ('no2', 'µg/m³', 'NO2 mass', 'Gas'),
+        ('o3', 'µg/m³', 'O3 mass', 'Gas'),
+        ('so2', 'µg/m³', 'SO2 mass', 'Gas')
+    ) AS t(parameter, unit, display_name, category)
 )
 
-SELECT *
-FROM base
-{% if is_incremental() %}
-WHERE (location_id, parameter, CAST(last_updated AS TIMESTAMP)) NOT IN (SELECT location_id, parameter, CAST(last_updated AS TIMESTAMP) FROM {{ this }})
-{% endif %}
+SELECT
+    s.sensor_id,
+    s.value,
+    s.location_id,
+    s.parameter,
+    m.unit,
+    m.display_name,
+    m.category
+FROM {{ ref('int_openaq_deduped') }} s
+LEFT JOIN parameter_metadata m
+       ON s.parameter = m.parameter
+ORDER BY s.location_id, s.parameter

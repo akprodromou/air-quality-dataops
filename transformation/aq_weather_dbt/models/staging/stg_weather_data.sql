@@ -26,8 +26,6 @@ WITH unnested_weather AS (
 )
 
 SELECT
-    *,
-    -- Example simple heuristic (replace with your actual model/logic)
-    (0.5 * temperature_2m - 0.3 * windspeed_10m + 0.2 * relativehumidity_2m) AS predicted_pm25
+    *
 FROM unnested_weather
 

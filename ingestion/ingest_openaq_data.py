@@ -6,9 +6,10 @@ from pathlib import Path
 import requests
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, date
 # Import for environment variables
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
+from openaq import OpenAQ
 
 # Load environment variables from the .env file which is not pushed to remote. 
 # The location coordinates and name should therefore be defined first in the .env file
@@ -33,7 +34,7 @@ RAW_DATA_PATH_AIR_QUALITY.mkdir(parents=True, exist_ok=True)
 OPENAQ_API_KEY = os.getenv("OPENAQ_API_KEY")
 
 # A function to fetch the station name for a given city from the OpenAQ API v3
-def get_station_data(city_lat: int, city_lon: int) -> int | None:
+def get_station_id(city_lat: int, city_lon: int) -> int | None:
     if not OPENAQ_API_KEY:
         print("Error: OPENAQ_API_KEY environment variable not set.")
         return None
@@ -46,7 +47,7 @@ def get_station_data(city_lat: int, city_lon: int) -> int | None:
     try:
         params = {
             "coordinates": f"{city_lat},{city_lon}",
-            "radius": 5000, 
+            "radius": 1000, 
             "limit": 1000
         }
         response = requests.get(OPENAQ_LOCATIONS_API_URL, params=params, headers=headers)
@@ -55,17 +56,47 @@ def get_station_data(city_lat: int, city_lon: int) -> int | None:
         response.raise_for_status()
         # .json() parses the response into a Python object
         data = response.json()
+        # print(data)
         # print(json.dumps(data, indent=4))
-
+        stations_found = len(data['results'])
+        print(f"Numer of stations found: {stations_found}")
         if data and data.get('results'):
-            # get the first station for the specific city
-            station = data['results'][0]
-            station_name = station.get('name')
-            station_id = station.get('id')
-            print(f"Found station named {station_name} "
-                  f"for coordinates {city_lat},{city_lon} "
-                  f"with id = {station_id}.")
-            return data
+            station_id = None
+            # get the first station for the specific location
+            for i, item in enumerate(data['results']):
+                # Extract UTC timestamp from nested JSON with a double get
+                # will return None if none found
+                dt_last_str = item.get('datetimeLast', {}).get('utc')
+                print(f"Station No.{i}, name {item.get('name')} was last updated on {dt_last_str}")
+                if dt_last_str:
+                    dt_to = datetime.fromisoformat(dt_last_str.replace("Z", "+00:00")).date()
+                    # Check if the station was updated in the last 24hrs
+                    if dt_to > date.today() - timedelta(days=1):
+                        # print(item)
+                        station = item
+                        station_name = station.get('name')
+                        station_id = station.get('id')
+                        sensors_dict = {}
+                        pm10_sensor_id = None
+
+                        for sensor in station['sensors']:
+                            sensors_dict[sensor['parameter']['name']] = sensor['id']
+                            if sensor['parameter']['name'] == 'pm10':
+                                pm10_sensor_id = sensor['id']
+                        if pm10_sensor_id:
+                            print(
+                                f"Found station named {station_name} "
+                                f"for coordinates {city_lat},{city_lon} "
+                                f"with id = {station_id}.\n"
+                                f"Sensor id for PM10 is {pm10_sensor_id}."
+                            )
+                        else:
+                            print(f"No PM10 station found for station {station_name}.")
+
+                        # Return all three values
+                        return sensors_dict, pm10_sensor_id, station_id    
+            print(f"No updated station found for {CITY_NAME}")
+            return None
         else:
             print(f"No station found for coordinates {city_lat},{city_lon}.")
             return None
@@ -78,24 +109,35 @@ def get_station_data(city_lat: int, city_lon: int) -> int | None:
     return None
 
 # now take the data from the previous step and save it to the directory
-def save_raw_data(data: dict, city: str, directory: str):
-    # Create the directory if it doesn't exist
+def get_raw_data(station_id: str, city: str, directory: str, sensors_dict: dict):
     os.makedirs(directory, exist_ok=True)
 
-    # Generate a timestamped filename for uniqueness and traceability
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"openaq_data_{city.lower().replace(' ', '_')}_{timestamp}.json"
-    # os.path.join automatically adds the correct separator (\ or /) between the parts of the path
     filepath = os.path.join(directory, filename)
 
+    url = f"https://api.openaq.org/v3/locations/{station_id}/latest"
+    headers = {"X-API-Key": OPENAQ_API_KEY}
+
     try:
+        resp = requests.get(url, headers=headers)
+        resp.raise_for_status()
+        data = resp.json()
+
+        # Add sensors_dict to the saved JSON
+        data['sensors_dict'] = sensors_dict
+
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4)
-        print(f"Raw data saved successfully to: {filepath}")
+
+        print(f"Latest measurement + sensors_dict saved successfully to: {filepath}")
+    except requests.RequestException as req_err:
+        print(f"API request error: {req_err}")
     except IOError as io_err:
         print(f"Error saving file {filepath}: {io_err}")
     except Exception as e:
         print(f"An unexpected error occurred while saving data: {e}")
+
 
 # Main Execution
 # Uses the two functions defined above
@@ -108,19 +150,12 @@ if __name__ == "__main__":
         print("OPENAQ_API_KEY='YOUR_ACTUAL_OPENAQ_API_KEY_HERE'")
     else:
         # Run the function we defined earlier to get the data for the specified city
-        station_data = get_station_data(CITY_LAT, CITY_LON)
-        if station_data:
-            # Fetch data using the provided station name
-            air_quality_data = station_data
-            # Save data if fetching was successful
-            # Ensure 'results' array is not empty
-            if air_quality_data and air_quality_data.get('results'): 
-                save_raw_data(air_quality_data, CITY_NAME, RAW_DATA_PATH_AIR_QUALITY)
-                print("Data ingestion successful!")
-            else:
-                print(f"Failed to fetch air quality data or 'results' array was empty for city {CITY_NAME}.")
-               
+        sensors_dict, pm10_sensor_id, station_id = get_station_id(CITY_LAT, CITY_LON)
+        if station_id:
+            get_raw_data(station_id, CITY_NAME, RAW_DATA_PATH_AIR_QUALITY, sensors_dict)
+            print("Data ingestion successful!")      
         else:
             print(f"Could not find an AQ monitoring station for {CITY_LAT, CITY_LON}. No data fetched.")
 
 
+ 

@@ -15,17 +15,288 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import janitor
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 %matplotlib inline
 ```
 
-And now let's import our data:
+And now let's import our weather data:
 
 ```{python}
 
-data_raw = pd.read_csv("data/diavata_air_quality_weather_data_2023csv.csv", skiprows=5)
+data_raw_weather = pd.read_csv(
+    "data/historic_data/thessaloniki-meteo-2023.csv",
+    header=0      
+)
+data_raw_weather.tail()
 
-data_raw.head()
+```
+and AQ data:
+
+```{python}
+# Read the JSON Lines file
+data_raw_aq = pd.read_json("data/historic_data/Thessaloniki_PM25_2023.json", lines=True)
+
+data_raw_aq = data_raw_aq.clean_names(remove_special=True)
+
+data_raw_aq.head()
+```
+
+## Data Cleaning
+
+### Column fixing
+
+#### Weather dataframe
+
+I'll start by dropping the columns I don't need and standarizing column names:
+
+```{python}
+data_raw_weather = data_raw_weather.drop([
+    'T_max', 'T_min', 'RH_max',
+    'RH_min','Prs_max', 'Prs_min',
+    'Ac_R', 'WG'
+    ], axis=1)
+data_raw_weather = data_raw_weather.clean_names(remove_special=True)
+```
+
+#### AQ Dataframe
+
+```{python}
+
+data_raw_aq = data_raw_aq.clean_names(remove_special=True)
+
+# Convert 'Value' to numeric (remove extra quotes)
+data_raw_aq['value'] = data_raw_aq['value'].str.replace('"', '').astype(float) / 1e18
+
+# Convert 'Start' from milliseconds to datetime and format as 'dd/mm/yy'
+data_raw_aq['start'] = pd.to_datetime(data_raw_aq['start'], unit='ms').dt.strftime('%d/%m/%y')
+
+data_raw_aq.head()
+
+```
+
+### Missing Values
+
+#### Weather dataframe
+
+Let's check the number of na values:
+
+```{python}
+# Calculate missing values
+missing_values_weather = data_raw_weather.isnull().sum()
+print(f"""Missing values per column in Weather dataset: 
+{missing_values_weather}""")
+```
+
+#### AQ Dataframe
+
+Glancing through the data, I noticed that there are data points marked as '-9999', meaning they are null. I'll keep them for the time being, so that joining the tables will still work, and remove them once the join has been done.
+
+```{python}
+# data_raw_aq = data_raw_aq.replace('-9999', np.nan)
+
+# Calculate missing values
+missing_values_aq = data_raw_aq.isnull().sum()
+print(f"""Missing values per column in Weather dataset: 
+{missing_values_aq}""")
+
+# data_clean_aq = data_raw_aq.dropna()
+# missing_values_aq = data_clean_aq.isnull().sum()
+# print(f"""Missing values per column in cleaned Weather dataset: 
+# {missing_values_aq}""")
+
+```
+
+### Transformations
+
+#### Weather dataframe
+
+Let's check the data types of the columns:
+```{python}
+data_raw_weather.info()
+print("Wind direction (dwd) column values:")
+print(data_raw_weather['dwd'].unique())
+
+```
+
+I therefore need to:
+* Convert date from object to datetime type
+* Assign wind directions to a number, as this is how they are given in the weather predictions of Open Meteo.
+
+```{python}
+
+# object to datetime conversion
+data_raw_weather['date'] = pd.to_datetime(data_raw_weather['date'], dayfirst=True, errors='coerce')
+
+# wind direction string to float
+directions = ['SE', 'E', 'NNW', 'W', 'ESE', 'NW', 'N', 'SSW', 'ENE', 'WNW', 'WSW', 'SW', 'S']
+
+# Mapping of compass points to degrees
+direction_to_deg = {
+    'N': 0,
+    'NNE': 22.5,
+    'NE': 45,
+    'ENE': 67.5,
+    'E': 90,
+    'ESE': 112.5,
+    'SE': 135,
+    'SSE': 157.5,
+    'S': 180,
+    'SSW': 202.5,
+    'SW': 225,
+    'WSW': 247.5,
+    'W': 270,
+    'WNW': 292.5,
+    'NW': 315,
+    'NNW': 337.5
+}
+
+# Convert list to degrees
+data_raw_weather['dwd'] = [direction_to_deg[wind_dir] for wind_dir in data_raw_weather['dwd']]
+
+```
+
+I'll also simplify the date format, as I'm interested only in the date:
+```{python}
+data_raw_weather['date'] = pd.to_datetime(data_raw_weather['date']).dt.strftime("%d/%m/%y")
+data_raw_weather.info()
+data_raw_weather.describe()
+```
+Let's check the final result:
+```{python}
+data_raw_weather.head()
+```
+
+#### AQ dataframe
+
+Let's check the data types of the columns:
+```{python}
+data_raw_aq.info()
+```
+I'll keep only the attributes I'm interested in (date and PM2.5 values):
+
+```{python}
+# Group every 24 rows (from hourly to daily average)
+# PM2.5 values
+# daily_avg = data_raw_aq.groupby(data_raw_aq.index // 24)['value'].mean().reset_index(drop=True)
+def safe_mean(group):
+    # If any hourly values are flagged as -9999 → mark the whole daily mean NaN
+    if (group == -9999).any():
+        return np.nan
+    return group.mean()
+
+# Apply by 24-hour groups
+daily_avg = (
+    data_raw_aq
+    # a pandas Series containing the 24 hourly values for one day (not yet aggregated)
+    .groupby(data_raw_aq.index // 24)['value']
+    .apply(safe_mean)
+    .reset_index(drop=True)
+)
+
+# get dates
+daily_dates = data_raw_aq.groupby(data_raw_aq.index // 24)['start'].first().reset_index(drop=True)
+
+# Combine into a single DataFrame
+data_raw_aq = pd.DataFrame({'date': daily_dates, 'pm25_value': daily_avg})
+
+data_raw_aq.tail(20)
+```
+
+## Dataframes Join
+
+```{python}
+
+merged_df = pd.merge(data_raw_weather, data_raw_aq, on='date', how='inner')
+
+merged_df.head(20)
+```
+
+And we can now remove na values:
+
+```{python}
+df_clean = merged_df.dropna()
+missing_values_aq = df_clean.isnull().sum()
+print(f"""Missing values per column in cleaned dataset: 
+{missing_values_aq}""")
+
+df_clean.info()
+```
+
+## Data Exploration
+
+```{python}
+sns.pairplot(df_clean, height=1.2)
+plt.show()
+```
+The pairplot shows a small correlation of PM25 with humidity and precipitation.
+
+<!-- ### Pm10 over time -->
+
+```{python}
+
+plt.figure(figsize=(10,5))
+plt.plot(df_clean['date'], df_clean['pm25_value'], marker='o', label='pm10')
+plt.xlabel('Date/Time')
+plt.ylabel('pm2.5')
+plt.title('PM2.5 Levels Over Time')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+```
+
+## Training and Testing data
+
+Now that we've explored the data a bit, we'll go ahead and split the data into training and testing sets.
+
+```{python}
+X = df_clean.drop(columns=['pm25_value', 'date'])
+y = df_clean['pm25_value']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=101)
+```
+
+### Training the Model
+
+```{python}
+lm = LinearRegression()
+lm.fit(X_train, y_train)
+```
+
+And now let's get the coefficients:
+
+```{python}
+lm.coef_
+lm.feature_names_in_ 
+pd.DataFrame(lm.coef_, X.columns, columns = ['Correlation'])
+```
+
+### Evaluating the Model
+
+I'll get the predictions first:
+```{python}
+predictions = lm.predict(X_test)
+```
+
+Let's evaluate our model performance by calculating the residual sum of squares and the explained variance score (R^2).
+
+```{python}
+mae = mean_absolute_error(predictions, y_test)
+mse = mean_squared_error(predictions, y_test)
+rmse = np.sqrt(mean_squared_error(predictions, y_test))
+
+print("MAE:",mae)
+print("MSE:",mse)
+print("RMSE:",rmse)
+```
+
+### Residuals
+
+Let's quickly explore the residuals to make sure everything was okay with our data.
+
+```{python}
+sns.displot(y_test - predictions, bins = 50)
 ```

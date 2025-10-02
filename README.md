@@ -151,9 +151,22 @@ This will catch:
 
 - The staging model (stg_openaq_data) is doing exactly what it should. This is where you remove obvious junk (null IDs, invalid country codes, etc.) and apply basic transformations
 
-✅ Extracting and flattening nested JSON structures
-✅ Renaming columns to business-friendly names
-✅ Light filtering (specific parameters only)
-✅ Standardizing data types
+- Extracting and flattening nested JSON structures
+- Renaming columns to business-friendly names
+- Light filtering (specific parameters only)
+- Standardizing data types
 
 - Intermediate (sometimes called int_ or “core” models): this is the layer where you enforce data quality rules like deduplication, keeping the latest record, or normalizing across sources. It gives you predictable, clean tables for downstream marts.
+
+
+## File Viewing
+
+DuckDB UI
+duckdb -ui
+
+## Pollutant codes
+
+https://www.eionet.europa.eu/aqportal/doc/IPR%20guidance_2.0.1_final.pdf
+Micrograms per cubic meter
+https://eeadmz1-downloads-webapp.azurewebsites.net/
+European Environment Agency
