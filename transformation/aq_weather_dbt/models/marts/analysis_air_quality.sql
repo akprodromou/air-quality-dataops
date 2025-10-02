@@ -14,18 +14,25 @@ WITH parameter_metadata AS (
         ('o3', 'µg/m³', 'O3 mass', 'Gas'),
         ('so2', 'µg/m³', 'SO2 mass', 'Gas')
     ) AS t(parameter, unit, display_name, category)
+),
+
+cleaned_data AS (
+    SELECT
+        s.sensor_id,
+        CAST(s.value AS DOUBLE) AS value,
+        ROUND(CAST(s.value AS DOUBLE), 1) AS value_rounded,
+        s.parameter,
+        s.reading_date,
+        s.location_id,
+        m.unit,
+        m.display_name,
+        m.category
+    FROM {{ ref('int_openaq_deduped') }} s
+    LEFT JOIN parameter_metadata m
+           ON s.parameter = m.parameter
 )
 
-SELECT
-    s.sensor_id,
-    s.value,
-    s.parameter,
-    s.reading_date,
-    s.location_id,
-    m.unit,
-    m.display_name,
-    m.category
-FROM {{ ref('int_openaq_deduped') }} s
-LEFT JOIN parameter_metadata m
-       ON s.parameter = m.parameter
-ORDER BY s.location_id, s.parameter
+SELECT *
+FROM cleaned_data
+ORDER BY reading_date DESC, parameter
+

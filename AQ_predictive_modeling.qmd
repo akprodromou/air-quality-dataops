@@ -55,8 +55,7 @@ I'll start by dropping the columns I don't need and standarizing column names:
 ```{python}
 data_raw_weather = data_raw_weather.drop([
     'T_max', 'T_min', 'RH_max',
-    'RH_min','Prs_max', 'Prs_min',
-    'Ac_R', 'WG'
+    'RH_min', 'Prs_mean', 'Prs_max', 'Prs_min', 'WG'
     ], axis=1)
 data_raw_weather = data_raw_weather.clean_names(remove_special=True)
 ```
@@ -182,7 +181,7 @@ I'll keep only the attributes I'm interested in (date and PM2.5 values):
 # PM2.5 values
 # daily_avg = data_raw_aq.groupby(data_raw_aq.index // 24)['value'].mean().reset_index(drop=True)
 def safe_mean(group):
-    # If any hourly values are flagged as -9999 → mark the whole daily mean NaN
+    # If any hourly values are flagged as -9999, mark the whole daily mean NaN
     if (group == -9999).any():
         return np.nan
     return group.mean()
@@ -202,7 +201,7 @@ daily_dates = data_raw_aq.groupby(data_raw_aq.index // 24)['start'].first().rese
 # Combine into a single DataFrame
 data_raw_aq = pd.DataFrame({'date': daily_dates, 'pm25_value': daily_avg})
 
-data_raw_aq.tail(20)
+data_raw_aq.head(20)
 ```
 
 ## Dataframes Join
@@ -211,7 +210,7 @@ data_raw_aq.tail(20)
 
 merged_df = pd.merge(data_raw_weather, data_raw_aq, on='date', how='inner')
 
-merged_df.head(20)
+merged_df.tail(20)
 ```
 
 And we can now remove na values:
@@ -233,7 +232,31 @@ plt.show()
 ```
 The pairplot shows a small correlation of PM25 with humidity and precipitation.
 
-<!-- ### Pm10 over time -->
+I can see some outliers in the rainfall predictor, so let's look into it a bit further:
+
+```{python}
+
+# Q1 = df_clean['ac_r'].quantile(0.25)
+# Q3 = df_clean['ac_r'].quantile(0.75)
+# IQR = Q3 - Q1
+
+# # Define lower and upper bounds
+# lower_bound = round(Q1 - 1.5 * IQR, 2)
+# upper_bound = round(Q3 + 1.5 * IQR, 2)
+
+# print(f"Lower bound: {lower_bound}, Upper bound: {upper_bound}")
+
+```
+
+So any ac_r > 0.5 mm is considered an outlier, and I'll filter them out:
+
+```{python}
+
+# df_clean = df_clean[df_clean['ac_r'] <= upper_bound]
+
+```
+
+Now let's visualize PM2.5 levels over time, for Thessaloniki:
 
 ```{python}
 
@@ -241,7 +264,7 @@ plt.figure(figsize=(10,5))
 plt.plot(df_clean['date'], df_clean['pm25_value'], marker='o', label='pm10')
 plt.xlabel('Date/Time')
 plt.ylabel('pm2.5')
-plt.title('PM2.5 Levels Over Time')
+plt.title('PM2.5 Levels Over Time, Thessaloniki')
 plt.legend()
 plt.grid(True)
 plt.show()
@@ -269,9 +292,15 @@ lm.fit(X_train, y_train)
 And now let's get the coefficients:
 
 ```{python}
+
 lm.coef_
-lm.feature_names_in_ 
-pd.DataFrame(lm.coef_, X.columns, columns = ['Correlation'])
+lm.intercept_
+coefs = pd.DataFrame(
+    data = list(lm.coef_) + [lm.intercept_],
+    index = list(X.columns) + ["Intercept"],
+    columns = ["Coefficient"]
+)
+coefs
 ```
 
 ### Evaluating the Model

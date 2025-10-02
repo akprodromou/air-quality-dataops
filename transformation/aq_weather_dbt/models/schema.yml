@@ -100,10 +100,6 @@ models:
   - name: stg_weather_data
     description: "Staged hourly weather forecast data from Open-Meteo API, flattened and type-casted."
     columns:
-      - name: fetched_at_utc
-        description: "Timestamp when the forecast was fetched from the API (UTC)."
-        tests:
-          - not_null
       - name: source
         description: "Source of the weather data (e.g., open-meteo)."
         tests:
@@ -174,3 +170,52 @@ models:
         description: "Flag indicating if any core measurements are missing."
       - name: processed_at
         description: "Timestamp when this record was processed by dbt."
+  # mart
+  - name: analysis_weather
+    description: "Aggregated weather data with predicted PM10 values."
+    columns:
+      - name: city
+        description: "City name"
+        tests:
+          - not_null
+      - name: latitude
+        description: "City latitude"
+        tests:
+          - not_null
+
+      - name: longitude
+        description: "City longitude"
+        tests:
+          - not_null
+      - name: reading_date
+        description: "Date of observation"
+        tests:
+          - not_null
+      - name: reading_time
+        description: "Time of observation"
+        tests:
+          - not_null
+      - name: temperature_2m
+        description: "Hourly temperature at 2m"
+        tests:
+          - not_null
+      - name: relativehumidity_2m
+        description: "Hourly relative humidity at 2m"
+        tests:
+          - not_null
+      - name: windspeed_10m
+        description: "Hourly wind speed at 10m"
+        tests:
+          - not_null
+      - name: winddirection_10m
+        description: "Hourly wind direction at 10m"
+        tests:
+          - not_null
+      - name: precipitation
+        description: "Hourly precipitation"
+        tests:
+          - not_null
+      - name: predicted_pm25
+        description: "Predicted PM10 based on weather variables"
+        tests:
+          - not_null

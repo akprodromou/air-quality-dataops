@@ -2,28 +2,31 @@
 
 {{ config(
     materialized='incremental',
-    unique_key=['city', 'time_raw']
+    unique_key=['city']
 ) }}
 
 WITH base AS (
     SELECT
-        fetched_at_utc,
         city,
         latitude,
         longitude,
-        time_raw,
+        reading_date,
+        reading_time,
         temperature_2m,
         relativehumidity_2m,
         windspeed_10m,
         winddirection_10m,
         precipitation,
-        (- 0.577802 * temperature_2m + 0.122864 * relativehumidity_2m 
-        + 0.397465 * precipitation - 0.620459 * windspeed_10m + 0.005832 * winddirection_10m) AS predicted_pm10
+        ROUND(
+            (29.787054 - 0.755534 * temperature_2m + 0.094849 * relativehumidity_2m 
+            + 0.391230 * precipitation - 0.689948 * windspeed_10m 	-0.004429 * winddirection_10m), 
+            2
+        ) AS predicted_pm25
     FROM {{ ref('stg_weather_data') }}
 )
 
 SELECT *
 FROM base
 {% if is_incremental() %}
-WHERE (city, time_raw) NOT IN (SELECT city, time_raw FROM {{ this }})
+WHERE (city) NOT IN (SELECT city FROM {{ this }})
 {% endif %}

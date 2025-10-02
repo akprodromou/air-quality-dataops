@@ -7,7 +7,6 @@
 
 WITH unnested_weather AS (
     SELECT 
-        fetched_at_utc::TIMESTAMP AS fetched_at_utc,
         source,
         city,
         data.latitude AS latitude,
@@ -17,6 +16,9 @@ WITH unnested_weather AS (
         data.timezone_abbreviation AS timezone_abbreviation,
         data.elevation AS elevation,
         UNNEST(data.hourly.time) AS time_raw,
+        -- Split time_raw into date and time
+        CAST(SPLIT_PART(time_raw, 'T', 1) AS DATE) AS reading_date,
+        CAST(SPLIT_PART(time_raw, 'T', 2) AS TIME) AS reading_time,
         UNNEST(data.hourly.temperature_2m) AS temperature_2m,
         UNNEST(data.hourly.relativehumidity_2m) AS relativehumidity_2m,
         UNNEST(data.hourly.windspeed_10m) AS windspeed_10m,

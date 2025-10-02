@@ -9,7 +9,7 @@ import subprocess
 project_root = Path(__file__).parent.parent
 
 # Import the visualization function
-from visualize_air_quality import generate_visualizations
+# from visualization.visualize_air_quality import generate_visualizations
 
 # Trigger the execution of the ingest_openaq_data.py script (located in another file)
 # This fetches raw data from OpenAQ and saves it to ingestion/raw_data
@@ -81,11 +81,11 @@ with DAG(
         python_callable=run_dbt,
     )
 
-    task_visualizations = PythonOperator(
-        task_id='generate_visualizations',
-        python_callable=generate_visualizations,
-        op_kwargs={"output_dir": "/opt/airflow/visualizations"},
-    )
+    # task_visualizations = PythonOperator(
+    #     task_id='generate_visualizations',
+    #     python_callable=generate_visualizations,
+    #     op_kwargs={"output_dir": "/opt/airflow/visualizations"},
+    # )
 
     # Task dependencies
-    ingest_aq_data_task >> ingest_weather_data_task >> dbt_task >> task_visualizations
+    ingest_aq_data_task >> ingest_weather_data_task >> dbt_task 
