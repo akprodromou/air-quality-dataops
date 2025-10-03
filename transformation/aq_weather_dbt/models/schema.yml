@@ -29,7 +29,7 @@ models:
         tests:
           - not_null
       - name: parameter
-        description: "Air quality parameter measured by the sensor (e.g., pm10, pm25, no2, co)."
+        description: "Air quality parameter measured by the sensor (e.g., pm10, pm25, no2)."
         tests:
           - not_null
 
@@ -51,7 +51,7 @@ models:
         tests:
           - not_null
       - name: parameter
-        description: "Air quality parameter measured by the sensor (e.g., pm10, pm25, no2, co)."
+        description: "Air quality parameter measured by the sensor (e.g., pm10, pm25, no2)."
         tests:
           - not_null
 
@@ -72,7 +72,7 @@ models:
         tests:
           - not_null
       - name: parameter
-        description: "Air quality parameter measured by the sensor (e.g., pm10, pm25, no2, co)."
+        description: "Air quality parameter measured by the sensor (e.g., pm10, pm25, no2)."
         tests:
           - not_null
       - name: unit
@@ -182,7 +182,6 @@ models:
         description: "City latitude"
         tests:
           - not_null
-
       - name: longitude
         description: "City longitude"
         tests:

@@ -1,7 +1,7 @@
 -- analysis_weather.sql
 
 {{ config(
-    materialized='incremental',
+    materialized='table',
     unique_key=['city']
 ) }}
 

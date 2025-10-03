@@ -20,8 +20,8 @@ WITH expanded AS (
 
 sensors_mapping AS (
     SELECT
-        unnest(['co', 'no', 'no2', 'o3', 'pm10', 'pm25', 'so2']) AS parameter,
-        unnest([sensors_dict.co, sensors_dict."no", sensors_dict.no2, 
+        unnest(['no2', 'o3', 'pm10', 'pm25', 'so2']) AS parameter,
+        unnest([sensors_dict.no2, 
                 sensors_dict.o3, sensors_dict.pm10, sensors_dict.pm25, 
                 sensors_dict.so2]) AS sensor_id
     FROM {{ ref('stg_ingested_openaq_data') }}
@@ -36,4 +36,5 @@ SELECT
 FROM expanded e
 LEFT JOIN sensors_mapping s
        ON e.sensor_id = s.sensor_id
+WHERE s.parameter IS NOT NULL
 ORDER BY e.location_id, s.parameter

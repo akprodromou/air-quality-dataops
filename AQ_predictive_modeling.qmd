@@ -91,20 +91,24 @@ print(f"""Missing values per column in Weather dataset:
 
 #### AQ Dataframe
 
-Glancing through the data, I noticed that there are data points marked as '-9999', meaning they are null. I'll keep them for the time being, so that joining the tables will still work, and remove them once the join has been done.
+Glancing through the data, I noticed that there are 'value' data points marked as '-9999', meaning they are null. I'll keep them for the time being, so that joining the tables on hours will still work, and remove them once the join has been done.
 
 ```{python}
-# data_raw_aq = data_raw_aq.replace('-9999', np.nan)
+# Replace -9999 with NaN for visualization
+aq_missing = data_raw_aq.copy()
+aq_missing['value'] = aq_missing['value'].replace(-9999, np.nan)
+missing_values_aq = aq_missing.isnull().sum()
 
-# Calculate missing values
-missing_values_aq = data_raw_aq.isnull().sum()
-print(f"""Missing values per column in Weather dataset: 
-{missing_values_aq}""")
+# Heatmap of missing values
+fig, ax = plt.subplots(figsize=(10, 5))
+sns.heatmap(aq_missing.isnull(), cbar=False, yticklabels=False)
+plt.title("ΑQ daraframe Missing values")
+plt.show()
 
 # data_clean_aq = data_raw_aq.dropna()
-# missing_values_aq = data_clean_aq.isnull().sum()
-# print(f"""Missing values per column in cleaned Weather dataset: 
-# {missing_values_aq}""")
+
+print(f"""Missing values per column in cleaned Weather dataset: 
+{missing_values_aq}""")
 
 ```
 
@@ -132,6 +136,16 @@ data_raw_weather['date'] = pd.to_datetime(data_raw_weather['date'], dayfirst=Tru
 # wind direction string to float
 directions = ['SE', 'E', 'NNW', 'W', 'ESE', 'NW', 'N', 'SSW', 'ENE', 'WNW', 'WSW', 'SW', 'S']
 
+wind_dir_count_dict = {key: 0 for key in directions}
+print(wind_dir_count_dict)
+
+for i, row in data_raw_weather.iterrows():
+    s = row['dwd']
+    if s in directions:
+        wind_dir_count_dict[s]+=1
+
+print(wind_dir_count_dict)
+
 # Mapping of compass points to degrees
 direction_to_deg = {
     'N': 0,
@@ -152,6 +166,8 @@ direction_to_deg = {
     'NNW': 337.5
 }
 
+# res = {f"{k}{ele}": ele for ele in a}
+# print(res)
 # Convert list to degrees
 data_raw_weather['dwd'] = [direction_to_deg[wind_dir] for wind_dir in data_raw_weather['dwd']]
 
@@ -216,6 +232,9 @@ merged_df.tail(20)
 And we can now remove na values:
 
 ```{python}
+
+
+
 df_clean = merged_df.dropna()
 missing_values_aq = df_clean.isnull().sum()
 print(f"""Missing values per column in cleaned dataset: 
@@ -236,15 +255,15 @@ I can see some outliers in the rainfall predictor, so let's look into it a bit f
 
 ```{python}
 
-# Q1 = df_clean['ac_r'].quantile(0.25)
-# Q3 = df_clean['ac_r'].quantile(0.75)
-# IQR = Q3 - Q1
+Q1 = df_clean['ac_r'].quantile(0.25)
+Q3 = df_clean['ac_r'].quantile(0.75)
+IQR = Q3 - Q1
 
-# # Define lower and upper bounds
-# lower_bound = round(Q1 - 1.5 * IQR, 2)
-# upper_bound = round(Q3 + 1.5 * IQR, 2)
+# Define lower and upper bounds
+lower_bound = round(Q1 - 1.5 * IQR, 2)
+upper_bound = round(Q3 + 1.5 * IQR, 2)
 
-# print(f"Lower bound: {lower_bound}, Upper bound: {upper_bound}")
+print(f"Lower bound: {lower_bound}, Upper bound: {upper_bound}")
 
 ```
 
@@ -252,7 +271,7 @@ So any ac_r > 0.5 mm is considered an outlier, and I'll filter them out:
 
 ```{python}
 
-# df_clean = df_clean[df_clean['ac_r'] <= upper_bound]
+df_clean = df_clean[df_clean['ac_r'] <= 1.5]
 
 ```
 

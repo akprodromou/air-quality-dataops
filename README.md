@@ -171,6 +171,16 @@ Micrograms per cubic meter
 https://eeadmz1-downloads-webapp.azurewebsites.net/
 European Environment Agency
 
-## Weather API
+## Meteorogical Data
 
-https://open-meteo.com/
+Weather predictions API: https://open-meteo.com/
+
+Historic data sourced from: [CLIMPACT](
+https://data.climpact.gr/en/dataset/497dc26d-45e0-4ad5-b8f3-5f8890f65129)
+
+The "National Research Network for Climate Change and Its Effects - CLIMPACT" is an interdisciplinary consortium comprising of 28 members from the academic and research communities in Greece and Cyprus. This consortium is dedicated to addressing issues related to Climate Change (CC) and the associated climate risks, natural disasters, as well as social and economic impacts.
+
+https://ecmwf-projects.github.io/copernicus-training-cams/proc-aq-index.html
+
+## Streamlit
+
