@@ -3,26 +3,15 @@ import streamlit as st
 import duckdb
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
 
 # Path to the dbt-created DuckDB file
 DB_PATH = "./data/air_quality_weather.duckdb"
 
 st.set_page_config(layout="centered")
 
-st.title("PM2.5 Predictions for Thessaloniki")
-
-st.header("What are PM2.5?")
-st.markdown("""
-<p style="line-height:1.4; margin-bottom:10px;">
-They are <b>fine inhalable particles</b>, with diameters that are generally <b>2.5 micrometers and smaller</b>.
-</p>
-<p style="line-height:1.4; margin-bottom:10px;">
-They can be made up of hundreds of different chemicals: some are emitted directly from sources such as construction sites, unpaved roads, or fires. Most PM2.5 particles form in the atmosphere as a result of <b>complex reactions of chemicals</b> emitted from power plants, industries, and automobiles.
-</p>
-<p style="line-height:1.4; margin-bottom:10px;">
-They are so small that they can be inhaled and cause serious health problems.
-</p>
-""", unsafe_allow_html=True)
+st.title("Air Quality Monitoring - Thessaloniki")
 
 st.markdown("""
 <style>
@@ -48,12 +37,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
-st.subheader("How small is 2.5 micrometers?")
-
-st.markdown("""
-Think about a single human hair: the average hair is about **70 micrometers** in diameter – making it **30 times larger** than the largest fine particle!
-""")
 
 ## Load data
 # Connect to DuckDB
@@ -241,3 +224,159 @@ fig.update_layout(
 
 # Show chart in Streamlit
 st.plotly_chart(fig, use_container_width=True)
+
+st.header("What are PM2.5?")
+st.markdown("""
+<p style="line-height:1.4; margin-bottom:10px;">
+They are <b>fine inhalable particles</b>, with diameters that are generally <b>2.5 micrometers and smaller</b>.
+</p>
+<p style="line-height:1.4; margin-bottom:10px;">
+They can be made up of hundreds of different chemicals: some are emitted directly from sources such as construction sites, unpaved roads, or fires. Most PM2.5 particles form in the atmosphere as a result of <b>complex reactions of chemicals</b> emitted from power plants, industries, and automobiles.
+</p>
+<p style="line-height:1.4; margin-bottom:10px;">
+They are so small that they can be inhaled and cause serious health problems.
+</p>
+""", unsafe_allow_html=True)
+
+st.subheader("How small is 2.5 micrometers?")
+
+st.markdown("""
+Think about a single human hair: the average hair is about **70 micrometers** in diameter – making it **30 times larger** than the largest fine particle!
+""")
+
+svg_code = """
+<svg viewBox="0 0 450 300" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .st0{fill:none;stroke:#ffffff;stroke-width:2;stroke-miterlimit:10;}
+    .label{fill:white; font-size:10px; }
+  </style>
+
+  <!-- Big circle (hair) -->
+  <circle cx="204" cy="184" r="70" class="st0"/>
+  <!-- Label for big circle -->
+  <text x="10" y="70" class="label">Human Hair (~70 µm)</text>
+  
+  <!-- Small circle (PM2.5) -->
+  <circle cx="298.5" cy="251" r="2.5" class="st0"/>
+  <!-- Label for small circle -->
+  <text x="365" y="207.5" class="label">PM2.5 (~2.5 µm)</text>
+  
+  <!-- Arrow from small circle -->
+  <path d="M303,242 Q328,210,353,206" stroke="white" stroke-width="1" fill="none" />
+  <line x1="351" y1="201" x2="359" y2="204" stroke="white" stroke-width="1" />
+  <line x1="359" y1="204" x2="353" y2="210" stroke="white" stroke-width="1" />
+  
+  <!-- Arrow from big circle -->
+  <path d="M160,118 Q130,90 96,87" stroke="white" stroke-width="1" fill="none" />
+  <line x1="96" y1="92.5" x2="89" y2="85.5" stroke="white" stroke-width="1" />
+  <line x1="89" y1="85.5" x2="97" y2="80.5" stroke="white" stroke-width="1" />
+</svg>
+"""
+
+st.markdown(svg_code, unsafe_allow_html=True)
+
+
+
+
+
+
+# fig = go.Figure()
+
+# # Human hair circle
+# fig.add_trace(go.Scatter(
+#     x=[0.5], y=[0.5],
+#     mode="markers",
+#     marker=dict(size=200, color="rgba(139,69,19,0)", line=dict(color="saddlebrown", width=4)),
+#     hovertext="Human Hair (~70 µm)",
+#     hoverinfo="text"
+# ))
+
+# # PM2.5 particle
+# fig.add_trace(go.Scatter(
+#     x=[0.55], y=[0.55],
+#     mode="markers",
+#     marker=dict(size=10, color="rgba(128,128,128,0)", line=dict(color="gray", width=3)),
+#     hovertext="PM2.5 (~2.5 µm)",
+#     hoverinfo="text"
+# ))
+
+# # Layout
+# fig.update_layout(
+#     xaxis=dict(visible=False, range=[0, 1]),
+#     yaxis=dict(visible=False, range=[0, 1]),
+#     width=400,
+#     height=400,
+#     margin=dict(l=20, r=20, t=20, b=20),
+#     plot_bgcolor="black"
+# )
+
+# st.plotly_chart(fig, use_container_width=False)
+
+
+
+# # Create figure
+# fig = go.Figure()
+
+# # Draw human hair (large circle) - left side
+# fig.add_shape(
+#     type="circle",
+#     x0=0.05, y0=0.3, x1=0.35, y1=0.6,  # Large circle on left
+#     line=dict(color="saddlebrown", width=4),
+#     xref="x",
+#     yref="y"
+# )
+
+# # Draw PM2.5 particle (small circle) - right side, next to large circle
+# fig.add_shape(
+#     type="circle",
+#     x0=0.38, y0=0.3, x1=0.40, y1=0.32,  # Small circle on right
+#     line=dict(color="gray", width=3),
+#     xref="x",
+#     yref="y"
+# )
+
+# # Curved line from large circle to its label
+# fig.add_shape(
+#     type="path",
+#     path="M 0.275 0.6 Q 0.325 0.725, 0.45 0.80",  # Curve from top of large circle to label
+#     line=dict(color="saddlebrown", width=2),
+#     xref="x", yref="y"
+# )
+
+# # Human hair label
+# fig.add_annotation(
+#     x=0.5, y=0.835,
+#     text="Human Hair (~70 µm)",
+#     showarrow=False,
+#     font=dict(color="saddlebrown", size=14, weight="bold"),
+#     xref="x", yref="y"
+# )
+
+# # Curved line from small circle to its label
+# fig.add_shape(
+#     type="path",
+#     path="M 0 0.115 Q 0.1 0.215, 0.2 0.24",  # Curve from small circle to label
+#     line=dict(color="gray", width=2),
+#     xref="x", yref="y"
+# )
+
+# # PM2.5 label
+# fig.add_annotation(
+#     x=0.65, y=0.25,
+#     text="PM2.5 (~2.5 µm)",
+#     showarrow=False,
+#     font=dict(color="gray", size=14, weight="bold"),
+#     xref="x", yref="y"
+# )
+
+# # Layout
+# fig.update_layout(
+#     xaxis=dict(visible=False, range=[0, 1]),
+#     yaxis=dict(visible=False, range=[0, 1]),
+#     width=400,
+#     height=400,
+#     margin=dict(l=20, r=20, t=20, b=20)
+# )
+
+# # Streamlit
+# st.plotly_chart(fig, use_container_width=False)
