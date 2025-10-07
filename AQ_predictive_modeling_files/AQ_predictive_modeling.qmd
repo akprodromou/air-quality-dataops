@@ -1,0 +1,518 @@
+---
+title: "Air Quality Regression Analysis"
+format:
+  html:
+    code-fold: false
+jupyter: python3
+---
+
+## Imports
+
+Let's start by importing the libraries we are going to use:
+
+```{python}
+import pandas as pd
+import numpy as np
+import re
+import matplotlib.pyplot as plt
+import seaborn as sns
+import janitor
+import glob
+from functools import reduce
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+# to provide lightweight pipelining in Python
+import joblib
+%matplotlib inline
+```
+
+And now let's import our weather data:
+
+```{python}
+
+data_raw_weather = pd.read_csv(
+    "../data/historic_data/thessaloniki-meteo-2023.csv",
+    header=0      
+)
+data_raw_weather.tail()
+
+```
+and AQ data:
+
+```{python}
+# Read and clean each pollutant
+def clean_raw_aq_data(filepath):
+    df = pd.read_json(filepath, lines=True)
+    # Extract pollutant name from the parent directory name
+    pollutant = filepath.split('/')[-2].lower()  # Get parent directory name
+    
+    # Rename 'Value' column
+    df = df.rename(columns={'Value': f"{pollutant}_value"})
+    df = df.clean_names()
+    
+    return df[["start", f"{pollutant}_value"]]
+
+# Get all JSON files across pollutant subfolders
+filepaths = glob.glob("../data/historic_data/*/*.json")
+
+for fp in filepaths:
+    match = re.search(r'/([A-Za-z0-9]+?)/', fp)
+    if match:
+        pollutant = match.group(1).lower()
+        print(f"{fp} -> {pollutant}")
+
+# Clean each one
+# Each element of the list is a pandas DataFrame
+dfs = [clean_raw_aq_data(fp) for fp in filepaths]
+
+# reduce() applies a function cumulatively to an iterable, reduce(function, iterable)
+merged_df_aq = reduce(
+    # function
+    lambda left, right: pd.merge(left, right, on="start", how="inner"),
+    # iterable
+    dfs
+)
+
+merged_df_aq.head()
+
+```
+
+
+## Data Cleaning
+
+### Column fixing
+
+#### Weather dataframe
+
+I'll start by dropping the columns I don't need and standarizing column names:
+
+```{python}
+data_raw_weather = data_raw_weather.drop([
+    'T_max', 'T_min', 'RH_max',
+    'RH_min', 'Prs_mean', 'Prs_max', 'Prs_min', 'WG'
+    ], axis=1)
+data_raw_weather = data_raw_weather.clean_names(remove_special=True)
+```
+
+#### AQ Dataframe
+
+```{python}
+
+merged_df_aq.info()
+
+# Convert 'Start' from milliseconds to datetime and format as 'dd/mm/yy'
+merged_df_aq['start'] = pd.to_datetime(merged_df_aq['start'])
+merged_df_aq = merged_df_aq.rename(columns={'start': 'date'})
+
+# Keep only rows where year is 2023, as this is the span that the weather file covers, too
+merged_df_aq = merged_df_aq[merged_df_aq['date'].dt.year == 2023]
+
+merged_df_aq.head()
+
+```
+
+### Missing Values
+
+#### Weather dataframe
+
+Let's check the number of na values:
+
+```{python}
+# Calculate missing values
+missing_values_weather = data_raw_weather.isnull().sum()
+print(f"""Missing values per column in Weather dataset: 
+{missing_values_weather}""")
+```
+
+#### AQ Dataframe
+
+Glancing through the data, I noticed that there are 'value' data points marked as '-9999', meaning they are null. I'll keep them for the time being, so that joining the tables on hours will still work, and remove them once the join has been done.
+
+```{python}
+# Replace -9999 with NaN for visualization
+aq_missing = merged_df_aq.copy()
+aq_missing = aq_missing.replace(-9999, np.nan)
+missing_values_aq = aq_missing.isnull().sum()
+
+# Heatmap of missing values
+fig, ax = plt.subplots(figsize=(10, 5))
+sns.heatmap(aq_missing.isnull(), cbar=False, yticklabels=False)
+plt.title("ΑQ daraframe Missing values")
+plt.show()
+
+# data_clean_aq = data_raw_aq.dropna()
+
+# print(f"""Missing values per column in cleaned Weather dataset: 
+# {missing_values_aq}""")
+
+```
+
+### Fixing Data Types & Transformations
+
+#### Weather dataframe
+
+Let's check the data types of the columns:
+```{python}
+data_raw_weather.info()
+# print("Wind direction (dwd) column values:")
+# print(data_raw_weather['dwd'].unique())
+
+```
+
+I therefore need to:
+* Convert date from object to datetime type
+* Assign wind directions to a number, as this is how they are given in the weather predictions of Open Meteo.
+
+```{python}
+
+# wind direction string to float
+directions = ['SE', 'E', 'NNW', 'W', 'ESE', 'NW', 'N', 'SSW', 'ENE', 'WNW', 'WSW', 'SW', 'S']
+
+wind_dir_count_dict = {key: 0 for key in directions}
+# print(wind_dir_count_dict)
+
+for i, row in data_raw_weather.iterrows():
+    s = row['dwd']
+    if s in directions:
+        wind_dir_count_dict[s]+=1
+
+# print(wind_dir_count_dict)
+
+# Mapping of compass points to degrees
+direction_to_deg = {
+    'N': 0,
+    'NNE': 22.5,
+    'NE': 45,
+    'ENE': 67.5,
+    'E': 90,
+    'ESE': 112.5,
+    'SE': 135,
+    'SSE': 157.5,
+    'S': 180,
+    'SSW': 202.5,
+    'SW': 225,
+    'WSW': 247.5,
+    'W': 270,
+    'WNW': 292.5,
+    'NW': 315,
+    'NNW': 337.5
+}
+
+# res = {f"{k}{ele}": ele for ele in a}
+# print(res)
+# Convert list to degrees
+data_raw_weather['dwd'] = [direction_to_deg[wind_dir] for wind_dir in data_raw_weather['dwd']]
+
+# convert date column from object to datetime
+data_raw_weather['date'] = pd.to_datetime(data_raw_weather['date'])
+
+data_raw_weather.info()
+
+```
+
+Let's check the final result:
+```{python}
+data_raw_weather.head()
+# data_raw_weather.describe()
+```
+
+#### AQ dataframe
+
+Let's check the data types of the columns:
+```{python}
+merged_df_aq.info()
+```
+##### Convert hourly means to daily means
+
+As the weather dataset is given in daily averages, I'll transform the AQ values to daily, too:
+
+```{python}
+# Group every 24 rows (from hourly to daily average)
+def safe_mean(group):
+    # If any hourly values are flagged as -9999, mark the whole daily mean NaN
+    if (group == -9999).any().any():  # check all columns
+        return pd.Series(np.nan, index=group.columns)
+    return group.mean()
+
+# Select only pollutant columns (exclude 'start')
+pollutant_cols = merged_df_aq.columns.drop('date')
+
+# Compute daily averages using integer division on index (24-hour chunks)
+daily_avg = (
+    merged_df_aq[pollutant_cols]
+    .groupby(merged_df_aq.index // 24)
+    .apply(safe_mean)
+    .reset_index(drop=True)
+)
+
+# Get daily dates from 'start' column
+daily_dates = merged_df_aq.groupby(merged_df_aq.index // 24)['date'].first().reset_index(drop=True)
+
+# Combine into a single DataFrame
+merged_df_aq = pd.concat([daily_dates, daily_avg], axis=1)
+
+merged_df_aq.head()
+
+```
+
+##### Seasonal fluctuation
+
+We know from literature that seasonal changes drive air quality fluctuations through changes in human activities, such as heating (emissions), altered atmospheric conditions (meteorology), and variations in chemical reaction rates. I'll therefore add month as a predictor, noting that that might increase multicollinearity - so I'll check for that later on:
+
+```{python}
+# create a new 'month' column
+merged_df_aq['month'] = pd.to_datetime(merged_df_aq['date']).dt.month
+
+# and let's visualize the outcome
+df_groupby = merged_df_aq.groupby(['month']).mean()
+
+plt.figure(figsize=(6,4))
+sns.lineplot(data=df_groupby.drop(columns=['date']))
+plt.title('Yearly Mean pollutant concentration (µg/m³)')
+plt.show()
+
+```
+
+It's interesting to note how ozone rises in the summer (when less rain falls) while SO2, PM10 and PM2.5 drop. We should however investigate (later on) which part of these fluctuations is explained by meteorological effects only, and which by patterns in transportation, use of fossil fuels etc.
+As a final step, we need to treat the month column as categorical, as in its current form given in 1–12 numbers, it's understood as ordinal. We'll use the one-hot encoding pandas function for this:
+
+```{python}
+# get the dummy values
+month_dummies = pd.get_dummies(merged_df_aq['month'], prefix='month', dtype=int)
+# join the dummies to the aq dataset
+merged_df_aq = pd.concat([merged_df_aq, month_dummies], axis=1)
+
+merged_df_aq.head()
+
+```
+
+##### Temporal autocorrelation
+
+Temporal autocorrelation means that values in a time series are correlated with their own past values. According to literature, it's a core property of time-series data, and critical for forecasting models. In our case, I'll factor it in by creating a new column for each of the dependent variables (i.e. the pollutants) which will store the daily mean of the previous day, for that pollutant.
+
+```{python}
+# List of target pollutants
+pollutants = ['pm10_value', 'pm25_value', 'o3_value', 'no2_value', 'so2_value']
+
+# Shift pollutant columns
+for p in pollutants:
+    # create a new column, with the _prev suffix added
+    merged_df_aq[f'{p}_prev'] = merged_df_aq[p].shift(1)
+
+merged_df_aq.head()
+
+```
+I can now include pm10_value_prev, pm25_value_prev etc. in the predictor list along with weather and month features, in the correlation analysis that follows.
+
+- 
+
+## Joining Tables 
+
+```{python}
+merged_df = pd.merge(data_raw_weather, merged_df_aq, on='date', how='inner')
+# sort by date to keep data in chronological order
+merged_df = merged_df.sort_values('date').reset_index(drop=True)
+
+merged_df.head()
+```
+
+And we can now remove na values:
+
+```{python}
+
+df_clean = merged_df.dropna()
+# missing_values_aq = df_clean.isnull().sum()
+# print(f"""Missing values per column in cleaned dataset: 
+# {missing_values_aq}""")
+
+df_clean.info()
+```
+
+## Data Exploration
+
+### Relationships between parameters (Bivariate Analysis)
+
+I'll start by distinguishing between predictors and outcomes:
+
+```{python}
+# Weather predictors
+predictors_weather = ['t_mean', 'rh_mean', 'ac_r', 'ws_mean', 'dwd']
+
+# Month one-hot columns
+month_cols = [col for col in df_clean.columns if col.startswith('month_')]
+# I'll drop a month to avoid multicollinearity between months, i.e. the so-called dummy variable trap
+month_cols.remove('month_4')  
+
+# Previous day pollutant columns
+prev_pollutant_cols = [col for col in df_clean.columns if col.endswith('_prev')]
+
+# Combine into final predictors list
+predictors = predictors_weather + month_cols + prev_pollutant_cols
+
+# Targets (i.e. the dependent variables)
+targets = ['pm10_value', 'pm25_value', 'o3_value', 'no2_value', 'so2_value']
+```
+
+
+```{python}
+corr = df_clean[predictors + targets].corr(method='pearson')
+
+# Extract correlation between predictors and targets
+corr_subset = corr.loc[predictors, targets]
+
+plt.figure(figsize=(8,6))
+sns.heatmap(corr_subset, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+plt.title("Correlation Heatmap")
+plt.show()
+```
+
+#### Comments
+
+1. Temporal autocorrelation
+The strongest correlations in the entire heatmap are between a pollutant's current value and its previous day's value (O3: 0.88, SO2: 0.85, PM2.5: 0.78, PM10: 0.70).
+This could be due permanent emission sources (e.g. industrial complex on the west side of the city).
+
+2. Meteorological Factors
+- Temperature has a moderate positive correlation with O3 (0.38), as higher temperatures promote photochemical Ozone formation. It shows a weak negative correlation with PM2.5 and PM10 - these pollutants are often caused by home heating in winter months.
+- Wind speed shows a moderate negative correlation with all major pollutants, apart from ozone. This is consistent with wind helping disperse and dilute pollutants.
+- Relative Humidity is weakly correlated, with a moderate negative correlation to PM 2.5
+​
+3. Seasonal Fluctuation
+- December (month 12) has a moderate positive correlation with PM10 likely as a result of house heating.
+- Summer months (July and August) have a strong positive correlation with O3, since ozone pollution rises with strong sunlight and high temperatures (due to photochemical reactions).
+
+Let's investigate into more detail the highest correlations found, starting with temperature and ozone:
+
+```{python}
+g = sns.lmplot(x="o3_value", y="t_mean", data=df_clean, height=4)
+g.fig.suptitle("Relationship Between Ozone Level and Mean Temperature", y=1.02)
+```
+
+```{python}
+g = sns.lmplot(x="o3_value", y="rh_mean", data=df_clean, height=4)
+g.fig.suptitle("Relationship Between Ozone Level and Relative Humidity", y=1.02)
+```
+
+```{python}
+g = sns.lmplot(x="no2_value", y="ws_mean", data=df_clean, height=4)
+g.fig.suptitle("Relationship Between NO2 levels and Wind Speed", y=1.02)
+```
+I can see some outliers in the rainfall predictor, so let's look into it a bit further:
+
+```{python}
+sns.jointplot(x="pm25_value", y="ac_r",
+              kind="scatter", data=df_clean, height=4)
+g.fig.suptitle("Relationship Between Precipitation and PM2.5 particles", y=1.02)
+```
+Although some outliers are detected in the rainfall variable, rainfall overall shows only weak correlations with the air quality outcomes. Therefore, these outliers will be retained to avoid unnecessary data loss.
+
+### Multicollinearity
+
+We should now chech the predictors for multicollinearity, as when predictors are highly correlated with each other (e.g., t_mean and month_7, or pm10_value_prev and pm25_value_prev), it can distort coefficient estimates in linear models (like regression) and inflate variance, making model interpretation unreliable.
+
+```{python}
+
+# Select predictors only
+X = df_clean[predictors].astype(float)
+
+# Compute VIF for each column
+vif_data = pd.DataFrame()
+vif_data["feature"] = X.columns
+vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+
+print(vif_data.sort_values("VIF", ascending=False))
+```
+As a rule of thumb, we assess VIF values as follows:
+- VIF < 5 → no issue
+- 5 ≤ VIF < 10 → moderate multicollinearity
+- VIF ≥ 10 → strong multicollinearity (consider action)
+
+For our case, we have:
+- pm10: Extremely high VIF at 58, i.e. it's almost perfectly explained by other predictors.
+- rh_mean: Similarly strong multicollinearity of 50 with other variables (likely temp and month).
+- pm25_value_prev, no2_value_prev, so2_value_prev and o3_value_prev fall between 20–45: previous-day pollutants are strongly intercorrelated.
+- Wind direction (dwd) and mean temperature (t_mean) have a VIF of 9, which is borderline.
+
+Since I am planning to build a Random Forest model, which is non-linear, multicollinearity is not a serious concern; the reason is that it doesn't rely on vector algebra for optimization, but on rule-based splits (e.g. the tree might pick one for a split and ignore the other), so the effects of individual predictors don't overlap.
+
+## Predictions Model
+
+As - according to literature - meteorological and pollutant data are generally non-linear and complex, I will initially consider a Random Forest model, as it might be better suited for capturing their interactions.
+
+```{python}
+model = RandomForestRegressor(n_estimators=200, random_state=42)
+```
+
+## Training and Testing data
+
+Now that we've explored the data a bit, we'll go ahead and split the data into training and testing sets.
+
+```{python}
+X = df_clean[predictors]
+y = df_clean[targets]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=25
+    )
+```
+
+### Training the Model
+
+```{python}
+rf_model = RandomForestRegressor(
+    n_estimators=300,
+    max_depth=None,
+    random_state=25,
+    n_jobs=-1
+)
+
+rf_model.fit(X_train, y_train)
+```
+
+### Evaluating the Model
+
+I'll get the predictions first:
+
+```{python}
+y_pred = rf_model.predict(X_test)
+y_pred = pd.DataFrame(y_pred, columns=targets)
+
+# print(y_pred)
+```
+
+And now I'll estimate:
+- The coefficient of Determination R^2: Measures the proportion of the variance in the dependent variable that is predictable from the independent variables.	
+- The Root Mean Squared Error (RMSE), which measures the average magnitude of the errors.	
+
+```{python}
+# Evaluate each pollutant separately
+for i, pollutant in enumerate(targets):
+    y_true = y_test[pollutant].values   
+    y_hat = y_pred[pollutant].values   
+    r2 = r2_score(y_true, y_hat)
+    rmse = root_mean_squared_error(y_true, y_hat)
+    print(f"{pollutant}: R² = {r2:.3f}, RMSE = {rmse:.2f}")
+```
+
+| Pollutant | R²   | RMSE  | Interpretation                                                                                                                                                 |
+| --------- | ---- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PM10**  | 0.49 | 11.74 | The model explains ~49% of variance, which is a moderate result. An explanation could be that PM10 coarse particles include many locally-generated sources (e.g. road dust, construction) which are difficult to capture |
+| **PM2.5** | 0.59 | 6.91 | Good performance. A higher R^2 and lower RMSE than PM10 could be due to the fact that PM2.5 is more heavily influenced by regional transport and secondary formation (rather than e.g. primary pollutants, that are released directly from a source like car exhausts).       |
+| **O₃**    | 0.74 | 11.00 | High performance of the model: ozone depends heavily on temperature and sunlight, so the model is doing well.       |
+| **NO₂**   | 0.42 | 11.87 | Moderate result: Nitrogen dioxide varies a lot with traffic and emissions (direct-emission pollutant, hence more difficult to predict).        |
+| **SO₂**   | 0.64 | 2.27  | Good performance: this could be explained by the (permanent) industrial complexes on the west side of the city.   |
+
+
+### Save the Random Forest model to a file
+
+```{python}
+# Save the trained Random Forest
+joblib.dump(rf_model, "random_forest_air_quality.pkl")
+
+# Save the list of feature columns used for training
+joblib.dump(predictors, "rf_feature_columns.pkl")
+```
