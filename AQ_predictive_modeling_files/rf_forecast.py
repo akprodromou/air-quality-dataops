@@ -3,11 +3,11 @@ import pandas as pd
 import duckdb
 import joblib
 
-rf_model = joblib.load("random_forest_air_quality.pkl")
-predictors_final = joblib.load("rf_feature_columns.pkl")
+rf_model = joblib.load("AQ_predictive_modeling_files/random_forest_air_quality.pkl")
+predictors_final = joblib.load("AQ_predictive_modeling_files/rf_feature_columns.pkl")
 
 # Base path (rf_forecast.py is in AQ_predictive_modeling_files/)
-base_dir = Path(__file__).parent.parent  # adjust to project root
+base_dir = Path(__file__).parent.parent  
 
 # Path to DuckDB file
 db_path = base_dir / "data/air_quality_weather.duckdb"
@@ -59,11 +59,14 @@ prev_day_values = prev_pollutants.copy()
 forecast_results = pd.DataFrame(columns=['forecast_day'] + targets)
 
 
+# Initialize list of predictions
+predictions_list = []
+
 for idx, day in weather_forecast.iterrows():
-    # 1. Day date
+    # Day date
     day_date = pd.to_datetime(day['forecast_day']).date()
 
-    # 2. Feature row
+    # Feature row
     day_features = {
         't_mean': day['t_mean'],
         'rh_mean': day['rh_mean'],
@@ -83,18 +86,22 @@ for idx, day in weather_forecast.iterrows():
     # Convert to DataFrame with same columns as training
     X_day = pd.DataFrame([day_features])[predictors_final]
 
-    # 3. Predict pollutants
+    # Predict pollutants
     y_pred_day = rf_model.predict(X_day)[0]
 
-    # 4. Store predictions
-    forecast_results = pd.concat([
-        forecast_results,
-        pd.DataFrame([[day_date] + list(y_pred_day)], columns=forecast_results.columns)
-    ], ignore_index=True)
+    # Store predictions (inside the loop)
+    predictions_list.append([day_date] + list(y_pred_day))
 
-    # 5. Update prev_day_values for next iteration
+    # Update prev_day_values for next iteration
     prev_day_values = dict(zip([f"{p}_prev" for p in targets], y_pred_day))
 
+# Create the Dataframe after the loop has been completed
+forecast_results = pd.DataFrame(predictions_list, columns=['forecast_day'] + targets)
 
+# Save forecast results for visualization
+forecast_path = Path(__file__).parent.parent / "data" / "forecasts" / "forecast_results.csv"
+forecast_results.to_csv(forecast_path, index=False)
 
+print(f"\nForecast saved to: {forecast_path}")
 print(forecast_results)
+

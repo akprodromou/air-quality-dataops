@@ -105,7 +105,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="imports" class="level2">
 <h2 class="anchored" data-anchor-id="imports">Imports</h2>
 <p>Let’s start by importing the libraries we are going to use:</p>
-<div id="b172971b" class="cell" data-execution_count="1">
+<div id="140ab13d" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
@@ -125,13 +125,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>matplotlib inline</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>And now let’s import our weather data:</p>
-<div id="5bafab98" class="cell" data-execution_count="2">
+<div id="97872073" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data_raw_weather <span class="op">=</span> pd.read_csv(</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"../data/historic_data/thessaloniki-meteo-2023.csv"</span>,</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    header<span class="op">=</span><span class="dv">0</span>      </span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>data_raw_weather.tail()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="38">
+<div class="cell-output cell-output-display" data-execution_count="2">
 <div>
 
 
@@ -248,7 +248,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>and AQ data:</p>
-<div id="ca5ddef1" class="cell" data-execution_count="3">
+<div id="da96967d" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read and clean each pollutant</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> clean_raw_aq_data(filepath):</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.read_json(filepath, lines<span class="op">=</span><span class="va">True</span>)</span>
@@ -290,7 +290,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 ../data/historic_data/NO2/GR0018A-NO2-2023_24.json -&gt; data
 ../data/historic_data/PM25/GR0018A-PM25-2017_24.json.json -&gt; data</code></pre>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="39">
+<div class="cell-output cell-output-display" data-execution_count="3">
 <div>
 
 
@@ -366,7 +366,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="weather-dataframe" class="level4">
 <h4 class="anchored" data-anchor-id="weather-dataframe">Weather dataframe</h4>
 <p>I’ll start by dropping the columns I don’t need and standarizing column names:</p>
-<div id="ddd74936" class="cell" data-execution_count="4">
+<div id="10affbc4" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data_raw_weather <span class="op">=</span> data_raw_weather.drop([</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'T_max'</span>, <span class="st">'T_min'</span>, <span class="st">'RH_max'</span>,</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'RH_min'</span>, <span class="st">'Prs_mean'</span>, <span class="st">'Prs_max'</span>, <span class="st">'Prs_min'</span>, <span class="st">'WG'</span></span>
@@ -376,7 +376,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="aq-dataframe" class="level4">
 <h4 class="anchored" data-anchor-id="aq-dataframe">AQ Dataframe</h4>
-<div id="e5713203" class="cell" data-execution_count="5">
+<div id="574a0dc9" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>merged_df_aq.info()</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert 'Start' from milliseconds to datetime and format as 'dd/mm/yy'</span></span>
@@ -402,7 +402,7 @@ Data columns (total 6 columns):
 dtypes: int64(5), object(1)
 memory usage: 822.5+ KB</code></pre>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="41">
+<div class="cell-output cell-output-display" data-execution_count="5">
 <div>
 
 
@@ -477,7 +477,7 @@ memory usage: 822.5+ KB</code></pre>
 <section id="weather-dataframe-1" class="level4">
 <h4 class="anchored" data-anchor-id="weather-dataframe-1">Weather dataframe</h4>
 <p>Let’s check the number of na values:</p>
-<div id="71a8bc07" class="cell" data-execution_count="6">
+<div id="5a63f1d6" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate missing values</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>missing_values_weather <span class="op">=</span> data_raw_weather.isnull().<span class="bu">sum</span>()</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"""Missing values per column in Weather dataset: </span></span>
@@ -497,7 +497,7 @@ dtype: int64</code></pre>
 <section id="aq-dataframe-1" class="level4">
 <h4 class="anchored" data-anchor-id="aq-dataframe-1">AQ Dataframe</h4>
 <p>Glancing through the data, I noticed that there are ‘value’ data points marked as ‘-9999’, meaning they are null. I’ll keep them for the time being, so that joining the tables on hours will still work, and remove them once the join has been done.</p>
-<div id="09480ffb" class="cell" data-execution_count="7">
+<div id="716e5bed" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace -9999 with NaN for visualization</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>aq_missing <span class="op">=</span> merged_df_aq.copy()</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>aq_missing <span class="op">=</span> aq_missing.replace(<span class="op">-</span><span class="dv">9999</span>, np.nan)</span>
@@ -528,7 +528,7 @@ dtype: int64</code></pre>
 <section id="weather-dataframe-2" class="level4">
 <h4 class="anchored" data-anchor-id="weather-dataframe-2">Weather dataframe</h4>
 <p>Let’s check the data types of the columns:</p>
-<div id="fee21040" class="cell" data-execution_count="8">
+<div id="74a43c37" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>data_raw_weather.info()</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># print("Wind direction (dwd) column values:")</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># print(data_raw_weather['dwd'].unique())</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -549,7 +549,7 @@ memory usage: 17.2+ KB</code></pre>
 </div>
 </div>
 <p>I therefore need to: * Convert date from object to datetime type * Assign wind directions to a number, as this is how they are given in the weather predictions of Open Meteo.</p>
-<div id="07259de2" class="cell" data-execution_count="9">
+<div id="e50f42b2" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># wind direction string to float</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>directions <span class="op">=</span> [<span class="st">'SE'</span>, <span class="st">'E'</span>, <span class="st">'NNW'</span>, <span class="st">'W'</span>, <span class="st">'ESE'</span>, <span class="st">'NW'</span>, <span class="st">'N'</span>, <span class="st">'SSW'</span>, <span class="st">'ENE'</span>, <span class="st">'WNW'</span>, <span class="st">'WSW'</span>, <span class="st">'SW'</span>, <span class="st">'S'</span>]</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -608,17 +608,17 @@ dtypes: datetime64[ns](1), float64(5)
 memory usage: 17.2 KB</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>/var/folders/6b/f7ny0f697v9_3ymryd5sqsmr0000gn/T/ipykernel_3784/1110300197.py:40: UserWarning:
+<pre><code>/var/folders/6b/f7ny0f697v9_3ymryd5sqsmr0000gn/T/ipykernel_7582/1110300197.py:40: UserWarning:
 
 Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
 </code></pre>
 </div>
 </div>
 <p>Let’s check the final result:</p>
-<div id="c94606ce" class="cell" data-execution_count="10">
+<div id="266815d4" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>data_raw_weather.head()</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># data_raw_weather.describe()</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="46">
+<div class="cell-output cell-output-display" data-execution_count="10">
 <div>
 
 
@@ -690,7 +690,7 @@ Could not infer format, so each element will be parsed individually, falling bac
 <section id="aq-dataframe-2" class="level4">
 <h4 class="anchored" data-anchor-id="aq-dataframe-2">AQ dataframe</h4>
 <p>Let’s check the data types of the columns:</p>
-<div id="516f543f" class="cell" data-execution_count="11">
+<div id="b8a78ce5" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>merged_df_aq.info()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
@@ -711,7 +711,7 @@ memory usage: 479.1 KB</code></pre>
 <section id="convert-hourly-means-to-daily-means" class="level5">
 <h5 class="anchored" data-anchor-id="convert-hourly-means-to-daily-means">Convert hourly means to daily means</h5>
 <p>As the weather dataset is given in daily averages, I’ll transform the AQ values to daily, too:</p>
-<div id="acf6e9c8" class="cell" data-execution_count="12">
+<div id="1db36a83" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Group every 24 rows (from hourly to daily average)</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> safe_mean(group):</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If any hourly values are flagged as -9999, mark the whole daily mean NaN</span></span>
@@ -737,7 +737,7 @@ memory usage: 479.1 KB</code></pre>
 <span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>merged_df_aq <span class="op">=</span> pd.concat([daily_dates, daily_avg], axis<span class="op">=</span><span class="dv">1</span>)</span>
 <span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>merged_df_aq.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="48">
+<div class="cell-output cell-output-display" data-execution_count="12">
 <div>
 
 
@@ -809,7 +809,7 @@ memory usage: 479.1 KB</code></pre>
 <section id="seasonal-fluctuation" class="level5">
 <h5 class="anchored" data-anchor-id="seasonal-fluctuation">Seasonal fluctuation</h5>
 <p>We know from literature that seasonal changes drive air quality fluctuations through changes in human activities, such as heating (emissions), altered atmospheric conditions (meteorology), and variations in chemical reaction rates. I’ll therefore add month as a predictor, noting that that might increase multicollinearity - so I’ll check for that later on:</p>
-<div id="9fd9d969" class="cell" data-execution_count="13">
+<div id="557940da" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a new 'month' column</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>merged_df_aq[<span class="st">'month'</span>] <span class="op">=</span> pd.to_datetime(merged_df_aq[<span class="st">'date'</span>]).dt.month</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -829,14 +829,14 @@ memory usage: 479.1 KB</code></pre>
 </div>
 </div>
 <p>It’s interesting to note how ozone rises in the summer (when less rain falls) while SO2, PM10 and PM2.5 drop. We should however investigate (later on) which part of these fluctuations is explained by meteorological effects only, and which by patterns in transportation, use of fossil fuels etc. As a final step, we need to treat the month column as categorical, as in its current form given in 1–12 numbers, it’s understood as ordinal. We’ll use the one-hot encoding pandas function for this:</p>
-<div id="0ec8d932" class="cell" data-execution_count="14">
+<div id="189fd50a" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get the dummy values</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>month_dummies <span class="op">=</span> pd.get_dummies(merged_df_aq[<span class="st">'month'</span>], prefix<span class="op">=</span><span class="st">'month'</span>, dtype<span class="op">=</span><span class="bu">int</span>)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># join the dummies to the aq dataset</span></span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>merged_df_aq <span class="op">=</span> pd.concat([merged_df_aq, month_dummies], axis<span class="op">=</span><span class="dv">1</span>)</span>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>merged_df_aq.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="50">
+<div class="cell-output cell-output-display" data-execution_count="14">
 <div>
 
 
@@ -986,7 +986,7 @@ memory usage: 479.1 KB</code></pre>
 <section id="temporal-autocorrelation" class="level5">
 <h5 class="anchored" data-anchor-id="temporal-autocorrelation">Temporal autocorrelation</h5>
 <p>Temporal autocorrelation means that values in a time series are correlated with their own past values. According to literature, it’s a core property of time-series data, and critical for forecasting models. In our case, I’ll factor it in by creating a new column for each of the dependent variables (i.e.&nbsp;the pollutants) which will store the daily mean of the previous day, for that pollutant.</p>
-<div id="4b9d8864" class="cell" data-execution_count="15">
+<div id="cc67c22e" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># List of target pollutants</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>pollutants <span class="op">=</span> [<span class="st">'pm10_value'</span>, <span class="st">'pm25_value'</span>, <span class="st">'o3_value'</span>, <span class="st">'no2_value'</span>, <span class="st">'so2_value'</span>]</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -996,7 +996,7 @@ memory usage: 479.1 KB</code></pre>
 <span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    merged_df_aq[<span class="ss">f'</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">_prev'</span>] <span class="op">=</span> merged_df_aq[p].shift(<span class="dv">1</span>)</span>
 <span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>merged_df_aq.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="51">
+<div class="cell-output cell-output-display" data-execution_count="15">
 <div>
 
 
@@ -1165,13 +1165,13 @@ memory usage: 479.1 KB</code></pre>
 </section>
 <section id="joining-tables" class="level2">
 <h2 class="anchored" data-anchor-id="joining-tables">Joining Tables</h2>
-<div id="698d7e05" class="cell" data-execution_count="16">
+<div id="ab07df6e" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>merged_df <span class="op">=</span> pd.merge(data_raw_weather, merged_df_aq, on<span class="op">=</span><span class="st">'date'</span>, how<span class="op">=</span><span class="st">'inner'</span>)</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># sort by date to keep data in chronological order</span></span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>merged_df <span class="op">=</span> merged_df.sort_values(<span class="st">'date'</span>).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>merged_df.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="52">
+<div class="cell-output cell-output-display" data-execution_count="16">
 <div>
 
 
@@ -1331,7 +1331,7 @@ memory usage: 479.1 KB</code></pre>
 </div>
 </div>
 <p>And we can now remove na values:</p>
-<div id="b39a8276" class="cell" data-execution_count="17">
+<div id="ba621da7" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>df_clean <span class="op">=</span> merged_df.dropna()</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># missing_values_aq = df_clean.isnull().sum()</span></span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"># print(f"""Missing values per column in cleaned dataset: </span></span>
@@ -1383,7 +1383,7 @@ memory usage: 67.1 KB</code></pre>
 <section id="relationships-between-parameters-bivariate-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="relationships-between-parameters-bivariate-analysis">Relationships between parameters (Bivariate Analysis)</h3>
 <p>I’ll start by distinguishing between predictors and outcomes:</p>
-<div id="8766e88d" class="cell" data-execution_count="18">
+<div id="223f3bd3" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Weather predictors</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>predictors_weather <span class="op">=</span> [<span class="st">'t_mean'</span>, <span class="st">'rh_mean'</span>, <span class="st">'ac_r'</span>, <span class="st">'ws_mean'</span>, <span class="st">'dwd'</span>]</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1401,7 +1401,7 @@ memory usage: 67.1 KB</code></pre>
 <span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Targets (i.e. the dependent variables)</span></span>
 <span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>targets <span class="op">=</span> [<span class="st">'pm10_value'</span>, <span class="st">'pm25_value'</span>, <span class="st">'o3_value'</span>, <span class="st">'no2_value'</span>, <span class="st">'so2_value'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="ab55eb45" class="cell" data-execution_count="19">
+<div id="d5f00f03" class="cell" data-execution_count="19">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>corr <span class="op">=</span> df_clean[predictors <span class="op">+</span> targets].corr(method<span class="op">=</span><span class="st">'pearson'</span>)</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract correlation between predictors and targets</span></span>
@@ -1438,10 +1438,10 @@ memory usage: 67.1 KB</code></pre>
 <li>Summer months (July and August) have a strong positive correlation with O3, since ozone pollution rises with strong sunlight and high temperatures (due to photochemical reactions).</li>
 </ul>
 <p>Let’s investigate into more detail the highest correlations found, starting with temperature and ozone:</p>
-<div id="d03514ad" class="cell" data-execution_count="20">
+<div id="04a55fb0" class="cell" data-execution_count="20">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> sns.lmplot(x<span class="op">=</span><span class="st">"o3_value"</span>, y<span class="op">=</span><span class="st">"t_mean"</span>, data<span class="op">=</span>df_clean, height<span class="op">=</span><span class="dv">4</span>)</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>g.fig.suptitle(<span class="st">"Relationship Between Ozone Level and Mean Temperature"</span>, y<span class="op">=</span><span class="fl">1.02</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="56">
+<div class="cell-output cell-output-display" data-execution_count="20">
 <pre><code>Text(0.5, 1.02, 'Relationship Between Ozone Level and Mean Temperature')</code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -1452,10 +1452,10 @@ memory usage: 67.1 KB</code></pre>
 </div>
 </div>
 </div>
-<div id="e124c5e2" class="cell" data-execution_count="21">
+<div id="88269897" class="cell" data-execution_count="21">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> sns.lmplot(x<span class="op">=</span><span class="st">"o3_value"</span>, y<span class="op">=</span><span class="st">"rh_mean"</span>, data<span class="op">=</span>df_clean, height<span class="op">=</span><span class="dv">4</span>)</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>g.fig.suptitle(<span class="st">"Relationship Between Ozone Level and Relative Humidity"</span>, y<span class="op">=</span><span class="fl">1.02</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="57">
+<div class="cell-output cell-output-display" data-execution_count="21">
 <pre><code>Text(0.5, 1.02, 'Relationship Between Ozone Level and Relative Humidity')</code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -1466,10 +1466,10 @@ memory usage: 67.1 KB</code></pre>
 </div>
 </div>
 </div>
-<div id="51ce1caa" class="cell" data-execution_count="22">
+<div id="1ab6d13a" class="cell" data-execution_count="22">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> sns.lmplot(x<span class="op">=</span><span class="st">"no2_value"</span>, y<span class="op">=</span><span class="st">"ws_mean"</span>, data<span class="op">=</span>df_clean, height<span class="op">=</span><span class="dv">4</span>)</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>g.fig.suptitle(<span class="st">"Relationship Between NO2 levels and Wind Speed"</span>, y<span class="op">=</span><span class="fl">1.02</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="58">
+<div class="cell-output cell-output-display" data-execution_count="22">
 <pre><code>Text(0.5, 1.02, 'Relationship Between NO2 levels and Wind Speed')</code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -1481,11 +1481,11 @@ memory usage: 67.1 KB</code></pre>
 </div>
 </div>
 <p>I can see some outliers in the rainfall predictor, so let’s look into it a bit further:</p>
-<div id="9e67b999" class="cell" data-execution_count="23">
+<div id="38daebbd" class="cell" data-execution_count="23">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>sns.jointplot(x<span class="op">=</span><span class="st">"pm25_value"</span>, y<span class="op">=</span><span class="st">"ac_r"</span>,</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>              kind<span class="op">=</span><span class="st">"scatter"</span>, data<span class="op">=</span>df_clean, height<span class="op">=</span><span class="dv">4</span>)</span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>g.fig.suptitle(<span class="st">"Relationship Between Precipitation and PM2.5 particles"</span>, y<span class="op">=</span><span class="fl">1.02</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="59">
+<div class="cell-output cell-output-display" data-execution_count="23">
 <pre><code>Text(0.5, 1.02, 'Relationship Between Precipitation and PM2.5 particles')</code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -1502,7 +1502,7 @@ memory usage: 67.1 KB</code></pre>
 <section id="multicollinearity" class="level3">
 <h3 class="anchored" data-anchor-id="multicollinearity">Multicollinearity</h3>
 <p>We should now chech the predictors for multicollinearity, as when predictors are highly correlated with each other (e.g., t_mean and month_7, or pm10_value_prev and pm25_value_prev), it can distort coefficient estimates in linear models (like regression) and inflate variance, making model interpretation unreliable.</p>
-<div id="1112ff16" class="cell" data-execution_count="24">
+<div id="9e72ac00" class="cell" data-execution_count="24">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Select predictors only</span></span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> df_clean[predictors].astype(<span class="bu">float</span>)</span>
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1545,14 +1545,14 @@ memory usage: 67.1 KB</code></pre>
 <section id="predictions-model" class="level2">
 <h2 class="anchored" data-anchor-id="predictions-model">Predictions Model</h2>
 <p>As - according to literature - meteorological and pollutant data are generally non-linear and complex, I will initially consider a Random Forest model, as it might be better suited for capturing their interactions.</p>
-<div id="d3731308" class="cell" data-execution_count="25">
+<div id="e53b0d5b" class="cell" data-execution_count="25">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> RandomForestRegressor(n_estimators<span class="op">=</span><span class="dv">200</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="training-and-testing-data" class="level2">
 <h2 class="anchored" data-anchor-id="training-and-testing-data">Training and Testing data</h2>
 <p>Now that we’ve explored the data a bit, we’ll go ahead and split the data into training and testing sets.</p>
-<div id="628c3e36" class="cell" data-execution_count="26">
+<div id="99f33fe5" class="cell" data-execution_count="26">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> df_clean[predictors]</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> df_clean[targets]</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1562,7 +1562,7 @@ memory usage: 67.1 KB</code></pre>
 </div>
 <section id="training-the-model" class="level3">
 <h3 class="anchored" data-anchor-id="training-the-model">Training the Model</h3>
-<div id="8c5d84f8" class="cell" data-execution_count="27">
+<div id="da2c14e8" class="cell" data-execution_count="27">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>rf_model <span class="op">=</span> RandomForestRegressor(</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    n_estimators<span class="op">=</span><span class="dv">300</span>,</span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    max_depth<span class="op">=</span><span class="va">None</span>,</span>
@@ -1571,8 +1571,8 @@ memory usage: 67.1 KB</code></pre>
 <span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>rf_model.fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="63">
-<style>#sk-container-id-2 {
+<div class="cell-output cell-output-display" data-execution_count="27">
+<style>#sk-container-id-1 {
   /* Definition of color scheme common for light and dark mode */
   --sklearn-color-text: #000;
   --sklearn-color-text-muted: #666;
@@ -1603,15 +1603,15 @@ memory usage: 67.1 KB</code></pre>
   }
 }
 
-#sk-container-id-2 {
+#sk-container-id-1 {
   color: var(--sklearn-color-text);
 }
 
-#sk-container-id-2 pre {
+#sk-container-id-1 pre {
   padding: 0;
 }
 
-#sk-container-id-2 input.sk-hidden--visually {
+#sk-container-id-1 input.sk-hidden--visually {
   border: 0;
   clip: rect(1px 1px 1px 1px);
   clip: rect(1px, 1px, 1px, 1px);
@@ -1623,7 +1623,7 @@ memory usage: 67.1 KB</code></pre>
   width: 1px;
 }
 
-#sk-container-id-2 div.sk-dashed-wrapped {
+#sk-container-id-1 div.sk-dashed-wrapped {
   border: 1px dashed var(--sklearn-color-line);
   margin: 0 0.4em 0.5em 0.4em;
   box-sizing: border-box;
@@ -1631,7 +1631,7 @@ memory usage: 67.1 KB</code></pre>
   background-color: var(--sklearn-color-background);
 }
 
-#sk-container-id-2 div.sk-container {
+#sk-container-id-1 div.sk-container {
   /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
      but bootstrap.min.css set `[hidden] { display: none !important; }`
      so we also need the `!important` here to be able to override the
@@ -1641,7 +1641,7 @@ memory usage: 67.1 KB</code></pre>
   position: relative;
 }
 
-#sk-container-id-2 div.sk-text-repr-fallback {
+#sk-container-id-1 div.sk-text-repr-fallback {
   display: none;
 }
 
@@ -1657,14 +1657,14 @@ div.sk-item {
 
 /* Parallel-specific style estimator block */
 
-#sk-container-id-2 div.sk-parallel-item::after {
+#sk-container-id-1 div.sk-parallel-item::after {
   content: "";
   width: 100%;
   border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
   flex-grow: 1;
 }
 
-#sk-container-id-2 div.sk-parallel {
+#sk-container-id-1 div.sk-parallel {
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -1672,28 +1672,28 @@ div.sk-item {
   position: relative;
 }
 
-#sk-container-id-2 div.sk-parallel-item {
+#sk-container-id-1 div.sk-parallel-item {
   display: flex;
   flex-direction: column;
 }
 
-#sk-container-id-2 div.sk-parallel-item:first-child::after {
+#sk-container-id-1 div.sk-parallel-item:first-child::after {
   align-self: flex-end;
   width: 50%;
 }
 
-#sk-container-id-2 div.sk-parallel-item:last-child::after {
+#sk-container-id-1 div.sk-parallel-item:last-child::after {
   align-self: flex-start;
   width: 50%;
 }
 
-#sk-container-id-2 div.sk-parallel-item:only-child::after {
+#sk-container-id-1 div.sk-parallel-item:only-child::after {
   width: 0;
 }
 
 /* Serial-specific style estimator block */
 
-#sk-container-id-2 div.sk-serial {
+#sk-container-id-1 div.sk-serial {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1711,14 +1711,14 @@ clickable and can be expanded/collapsed.
 
 /* Pipeline and ColumnTransformer style (default) */
 
-#sk-container-id-2 div.sk-toggleable {
+#sk-container-id-1 div.sk-toggleable {
   /* Default theme specific background. It is overwritten whether we have a
   specific estimator or a Pipeline/ColumnTransformer */
   background-color: var(--sklearn-color-background);
 }
 
 /* Toggleable label */
-#sk-container-id-2 label.sk-toggleable__label {
+#sk-container-id-1 label.sk-toggleable__label {
   cursor: pointer;
   display: flex;
   width: 100%;
@@ -1731,13 +1731,13 @@ clickable and can be expanded/collapsed.
   gap: 0.5em;
 }
 
-#sk-container-id-2 label.sk-toggleable__label .caption {
+#sk-container-id-1 label.sk-toggleable__label .caption {
   font-size: 0.6rem;
   font-weight: lighter;
   color: var(--sklearn-color-text-muted);
 }
 
-#sk-container-id-2 label.sk-toggleable__label-arrow:before {
+#sk-container-id-1 label.sk-toggleable__label-arrow:before {
   /* Arrow on the left of the label */
   content: "▸";
   float: left;
@@ -1745,25 +1745,25 @@ clickable and can be expanded/collapsed.
   color: var(--sklearn-color-icon);
 }
 
-#sk-container-id-2 label.sk-toggleable__label-arrow:hover:before {
+#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {
   color: var(--sklearn-color-text);
 }
 
 /* Toggleable content - dropdown */
 
-#sk-container-id-2 div.sk-toggleable__content {
+#sk-container-id-1 div.sk-toggleable__content {
   display: none;
   text-align: left;
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-2 div.sk-toggleable__content.fitted {
+#sk-container-id-1 div.sk-toggleable__content.fitted {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
-#sk-container-id-2 div.sk-toggleable__content pre {
+#sk-container-id-1 div.sk-toggleable__content pre {
   margin: 0.2em;
   border-radius: 0.25em;
   color: var(--sklearn-color-text);
@@ -1771,79 +1771,79 @@ clickable and can be expanded/collapsed.
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-2 div.sk-toggleable__content.fitted pre {
+#sk-container-id-1 div.sk-toggleable__content.fitted pre {
   /* unfitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
-#sk-container-id-2 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {
   /* Expand drop-down */
   display: block;
   width: 100%;
   overflow: visible;
 }
 
-#sk-container-id-2 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
   content: "▾";
 }
 
 /* Pipeline/ColumnTransformer-specific style */
 
-#sk-container-id-2 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-2 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-1 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
 /* Estimator-specific style */
 
 /* Colorize estimator box */
-#sk-container-id-2 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-2 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-1 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
-#sk-container-id-2 div.sk-label label.sk-toggleable__label,
-#sk-container-id-2 div.sk-label label {
+#sk-container-id-1 div.sk-label label.sk-toggleable__label,
+#sk-container-id-1 div.sk-label label {
   /* The background is the default theme color */
   color: var(--sklearn-color-text-on-default-background);
 }
 
 /* On hover, darken the color of the background */
-#sk-container-id-2 div.sk-label:hover label.sk-toggleable__label {
+#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
 /* Label box, darken color on hover, fitted */
-#sk-container-id-2 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+#sk-container-id-1 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
 /* Estimator label */
 
-#sk-container-id-2 div.sk-label label {
+#sk-container-id-1 div.sk-label label {
   font-family: monospace;
   font-weight: bold;
   display: inline-block;
   line-height: 1.2em;
 }
 
-#sk-container-id-2 div.sk-label-container {
+#sk-container-id-1 div.sk-label-container {
   text-align: center;
 }
 
 /* Estimator-specific */
-#sk-container-id-2 div.sk-estimator {
+#sk-container-id-1 div.sk-estimator {
   font-family: monospace;
   border: 1px dotted var(--sklearn-color-border-box);
   border-radius: 0.25em;
@@ -1853,18 +1853,18 @@ clickable and can be expanded/collapsed.
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-2 div.sk-estimator.fitted {
+#sk-container-id-1 div.sk-estimator.fitted {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
 /* on hover */
-#sk-container-id-2 div.sk-estimator:hover {
+#sk-container-id-1 div.sk-estimator:hover {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-2 div.sk-estimator.fitted:hover {
+#sk-container-id-1 div.sk-estimator.fitted:hover {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-2);
 }
@@ -1952,7 +1952,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 
 /* "?"-specific style due to the `<a>` HTML tag */
 
-#sk-container-id-2 a.estimator_doc_link {
+#sk-container-id-1 a.estimator_doc_link {
   float: right;
   font-size: 1rem;
   line-height: 1em;
@@ -1967,21 +1967,21 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
   border: var(--sklearn-color-unfitted-level-1) 1pt solid;
 }
 
-#sk-container-id-2 a.estimator_doc_link.fitted {
+#sk-container-id-1 a.estimator_doc_link.fitted {
   /* fitted */
   border: var(--sklearn-color-fitted-level-1) 1pt solid;
   color: var(--sklearn-color-fitted-level-1);
 }
 
 /* On hover */
-#sk-container-id-2 a.estimator_doc_link:hover {
+#sk-container-id-1 a.estimator_doc_link:hover {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-3);
   color: var(--sklearn-color-background);
   text-decoration: none;
 }
 
-#sk-container-id-2 a.estimator_doc_link.fitted:hover {
+#sk-container-id-1 a.estimator_doc_link.fitted:hover {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-3);
 }
@@ -2049,7 +2049,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
     height: 14px;
     cursor: pointer;
 }
-</style><div id="sk-container-id-2" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>RandomForestRegressor(n_estimators=300, n_jobs=-1, random_state=25)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-2" type="checkbox" checked=""><label for="sk-estimator-id-2" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>RandomForestRegressor</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.7/modules/generated/sklearn.ensemble.RandomForestRegressor.html">?<span>Documentation for RandomForestRegressor</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted" data-param-prefix="">
+</style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>RandomForestRegressor(n_estimators=300, n_jobs=-1, random_state=25)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked=""><label for="sk-estimator-id-1" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>RandomForestRegressor</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.7/modules/generated/sklearn.ensemble.RandomForestRegressor.html">?<span>Documentation for RandomForestRegressor</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted" data-param-prefix="">
         <div class="estimator-table">
             <details>
                 <summary>Parameters</summary>
@@ -2200,7 +2200,7 @@ document.querySelectorAll('.fa-regular.fa-copy').forEach(function(element) {
 <section id="evaluating-the-model" class="level3">
 <h3 class="anchored" data-anchor-id="evaluating-the-model">Evaluating the Model</h3>
 <p>I’ll get the predictions first:</p>
-<div id="d3c0734a" class="cell" data-execution_count="28">
+<div id="8dfe0106" class="cell" data-execution_count="28">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> rf_model.predict(X_test)</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> pd.DataFrame(y_pred, columns<span class="op">=</span>targets)</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2208,7 +2208,7 @@ document.querySelectorAll('.fa-regular.fa-copy').forEach(function(element) {
 </div>
 <p>And now I’ll estimate: - The coefficient of Determination R^2: Measures the proportion of the variance in the dependent variable that is predictable from the independent variables.<br>
 - The Root Mean Squared Error (RMSE), which measures the average magnitude of the errors.</p>
-<div id="72f4648f" class="cell" data-execution_count="29">
+<div id="8889aa8d" class="cell" data-execution_count="29">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate each pollutant separately</span></span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, pollutant <span class="kw">in</span> <span class="bu">enumerate</span>(targets):</span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    y_true <span class="op">=</span> y_test[pollutant].values   </span>
@@ -2275,13 +2275,13 @@ so2_value: R² = 0.644, RMSE = 2.27</code></pre>
 </section>
 <section id="save-the-random-forest-model-to-a-file" class="level3">
 <h3 class="anchored" data-anchor-id="save-the-random-forest-model-to-a-file">Save the Random Forest model to a file</h3>
-<div id="69a219ae" class="cell" data-execution_count="30">
+<div id="c986860e" class="cell" data-execution_count="30">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the trained Random Forest</span></span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>joblib.dump(rf_model, <span class="st">"random_forest_air_quality.pkl"</span>)</span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the list of feature columns used for training</span></span>
 <span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>joblib.dump(predictors, <span class="st">"rf_feature_columns.pkl"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="66">
+<div class="cell-output cell-output-display" data-execution_count="30">
 <pre><code>['rf_feature_columns.pkl']</code></pre>
 </div>
 </div>

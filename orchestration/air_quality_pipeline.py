@@ -43,6 +43,24 @@ def run_dbt():
         check=True
     )
 
+def forecast_predictions():
+    subprocess.run(
+        ["python3", str(project_root / "AQ_predictive_modeling_files/rf_forecast.py")],
+        # prevent the main program from silently continuing after a critical failure in ingestion
+        check=True
+    )
+        
+# def generate_visualizations():
+#     subprocess.run(
+#         ["streamlit",
+#         "run",
+#         "/opt/airflow/visualization/streamlit_app.py",
+#         "--server.port=8501",
+#         "--server.address=0.0.0.0"],
+#         # prevent the main program from silently continuing after a critical failure in ingestion
+#         check=True
+#     )
+
 # DAG definition
 
 # default_args is a dictionary of parameters that define default behavior for all tasks in our DAG
@@ -81,11 +99,15 @@ with DAG(
         python_callable=run_dbt,
     )
 
-    # task_visualizations = PythonOperator(
-    #     task_id='generate_visualizations',
+    forecast_task = PythonOperator(
+        task_id="forecast_predictions",
+        python_callable=forecast_predictions,
+    )
+
+    # visualize_task = PythonOperator(
+    #     task_id="generate_visualizations",
     #     python_callable=generate_visualizations,
-    #     op_kwargs={"output_dir": "/opt/airflow/visualizations"},
     # )
 
     # Task dependencies
-    ingest_aq_data_task >> ingest_weather_data_task >> dbt_task 
+    ingest_aq_data_task >> ingest_weather_data_task >> dbt_task >> forecast_task

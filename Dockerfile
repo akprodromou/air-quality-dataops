@@ -9,7 +9,7 @@ ENV AIRFLOW_HOME=/opt/airflow
 # Copy your project's requirements.txt into the container
 COPY requirements.txt /tmp/requirements.txt
 
-# Install your custom Python dependencies without Airflow constraints
+# Install custom Python dependencies without Airflow constraints
 # Remove any strict versions that conflict with Airflow (e.g., aiohttp)
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
@@ -18,6 +18,3 @@ COPY . ${AIRFLOW_HOME}
 
 # Set the working directory
 WORKDIR ${AIRFLOW_HOME}
-
-# Install additional Python packages
-RUN pip install --no-cache-dir plotly pandas duckdb
