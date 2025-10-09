@@ -17,11 +17,6 @@ WITH base AS (
         windspeed_10m,
         winddirection_10m,
         precipitation,
-        ROUND(
-            (29.787054 - 0.755534 * temperature_2m + 0.094849 * relativehumidity_2m 
-            + 0.391230 * precipitation - 0.689948 * windspeed_10m 	-0.004429 * winddirection_10m), 
-            2
-        ) AS predicted_pm25
     FROM {{ ref('stg_weather_data') }}
 )
 

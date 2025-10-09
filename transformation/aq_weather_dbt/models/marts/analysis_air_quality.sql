@@ -1,6 +1,6 @@
 -- Materialized as an incremental table, i.e. updated by processing only new or changed data since the last run
 {{ config(
-    materialized='incremental'
+    materialized='table'
 ) }}
 
 WITH parameter_metadata AS (

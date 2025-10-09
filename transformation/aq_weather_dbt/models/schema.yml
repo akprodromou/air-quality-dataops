@@ -214,7 +214,3 @@ models:
         description: "Hourly precipitation"
         tests:
           - not_null
-      - name: predicted_pm25
-        description: "Predicted PM10 based on weather variables"
-        tests:
-          - not_null
