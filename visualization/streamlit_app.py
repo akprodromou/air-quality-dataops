@@ -50,6 +50,7 @@ Key components include:
 - **Predictive modelling**: A Random Forest model trained on historical air quality (EEA) and weather data (CLIMPACT) is used to forecast air quality for the next 7 days, 
             based on the respective Open Meteo weather predictions.
 - **Visualization**: Summarizes current readings and daily pollutant forecasts for the following week, while informing users on health risk levels and pollutant information.
+The data pipeline is orchestrated with Airflow and containerized using Docker to ensure automated, reliable, and reproducible updates.
 """)
 
 ## Load the tables
