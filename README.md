@@ -125,10 +125,11 @@ python ingestion/ingest_weather_data.py
 
 Check that raw JSON/CSV files exist in:
 
+```bash
 ingestion/raw_data/air_quality/
 ingestion/raw_data/weather/
-
-Ensure data shape is as expected (e.g., correct keys in JSON).
+```
+Make sure data shape is as expected (e.g., correct keys in JSON).
 
 2. DBT Model Sanity
 
