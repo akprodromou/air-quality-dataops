@@ -3,107 +3,32 @@ import streamlit as st
 import duckdb
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
-from pathlib import Path
 import datetime
+from components import create_table_with_ring, create_pm_particles_diagram, generate_bin_circles, get_color
+from utils import load_forecast_csv, load_forecast_from_duckdb, get_bin_color, get_bin_index, get_verbal_status
+from config import (
+    VERBAL_LABELS, COLUMN_MAPPING, LIMIT_DICT,
+    DB_PATH, FORECAST_CSV, EXPECTED_POLLUTANTS
+)
+from components import load_css
+
 
 # ---------------------
 # Config / Paths
 # ---------------------
-st.set_page_config(page_title="Air Quality 7-Day Forecast", layout="centered")
+st.set_page_config(page_title="AQ Forecast Pipeline - Thessaloniki", layout="centered")
 
-# CSS code
-st.markdown("""
-<style>
-    .centered-table {
-        margin: auto;
-        text-align: center;
-    }
-    .centered-table td, .centered-table th {
-        text-align: center !important;
-        padding: 8px;
-    }
-
-    /* Blink animation for active circle */
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.65; }
-        100% { opacity: 1; }
-    }
-            
-    .blink-circle {
-        animation: pulse 3s infinite ease-in-out; 
-    }
-            
-    .circle-animated {
-        animation: pulse 3s infinite ease-in-out; 
-    }
-</style>
-""", unsafe_allow_html=True)
-
-BASE_DIR = Path(__file__).resolve().parent.parent  # project root
-DB_PATH = BASE_DIR / "data" / "air_quality_weather.duckdb"  # duckdb file
-FORECAST_CSV = BASE_DIR / "data" / "forecasts" / "forecast_results.csv"
+load_css('visualization/styles.css')
 
 # Connect to DuckDB
 con = duckdb.connect(DB_PATH, read_only=True)
 
-# list of expected pollutant columns (used as defaults)
-EXPECTED_POLLUTANTS = ["pm10_value", "pm25_value", "o3_value", "no2_value", "so2_value"]
+# Import notebook tables for visualization
+df_monthly = pd.read_csv("data/forecasts/monthly_mean_pollutants.csv")
+corr_subset = pd.read_csv("data/forecasts/correlation_matrix.csv", index_col=0)
+df_metrics = pd.read_csv("data/forecasts/model_metrics.csv")
 
-# ---------------------
-# Utility functions
-# ---------------------
-@st.cache_data(ttl=300)
-def load_forecast_csv(path: Path):
-    """Load forecast CSV if present; normalize column names and types."""
-    if not path.exists():
-        return None
-    df = pd.read_csv(path)
-    # try to find a date-like column and normalize to 'forecast_day'
-    if "forecast_day" not in df.columns:
-        possible_date_cols = [c for c in df.columns if ("date" in c.lower() or "day" in c.lower())]
-        if possible_date_cols:
-            df = df.rename(columns={possible_date_cols[0]: "forecast_day"})
-    if "forecast_day" not in df.columns:
-        # nothing we can do automatically
-        return None
-
-    df["forecast_day"] = pd.to_datetime(df["forecast_day"])
-    # coerce expected pollutant columns to numeric if they exist
-    for p in EXPECTED_POLLUTANTS:
-        if p in df.columns:
-            df[p] = pd.to_numeric(df[p], errors="coerce")
-    df = df.sort_values("forecast_day").reset_index(drop=True)
-    return df
-
-@st.cache_data(ttl=300)
-def load_forecast_from_duckdb(db_path: Path):
-    """Try to read a forecast/results table from DuckDB. Returns DataFrame or None."""
-    if not db_path.exists():
-        return None
-    try:
-        con = duckdb.connect(database=str(db_path), read_only=True)
-        # Try common table names that might hold predictions
-        candidate_tables = ["forecast_results", "predicted_pollutants_7day", "predictions", "predicted_forecast"]
-        for t in candidate_tables:
-            try:
-                df = con.execute(f"SELECT * FROM {t} ORDER BY forecast_day").fetchdf()
-                if "forecast_day" in df.columns or "reading_date" in df.columns:
-                    # normalize to 'forecast_day'
-                    if "reading_date" in df.columns and "forecast_day" not in df.columns:
-                        df = df.rename(columns={"reading_date": "forecast_day"})
-                    df["forecast_day"] = pd.to_datetime(df["forecast_day"])
-                    for p in EXPECTED_POLLUTANTS:
-                        if p in df.columns:
-                            df[p] = pd.to_numeric(df[p], errors="coerce")
-                    return df.sort_values("forecast_day").reset_index(drop=True)
-            except Exception:
-                continue
-    except Exception:
-        return None
-    return None
 
 # ---------------------
 # Plots
@@ -113,17 +38,18 @@ def load_forecast_from_duckdb(db_path: Path):
 
 st.title("Air Quality Monitoring - Thessaloniki")
 
-st.subheader("Overview")
+st.header("Overview")
 st.markdown("""
-This project is part of an end-to-end **Air Quality DataOps pipeline** for Thessaloniki, Greece. It automates the **collection, transformation, and prediction** of pollutant concentrations using open data from the **OpenAQ API** and a trained **Random Forest forecasting model**.
+This project is part of an end-to-end **Air Quality DataOps pipeline** for Thessaloniki, Greece. It automates the **collection, 
+transformation, and prediction** of pollutant concentrations using open data from the **European Environment Agency, the CLIMPACT initiative,
+OpenAQ and Open-Meteo APIs**, with the aim of demonstrating a pipeline for monitoring pollution dynamics and assessing air quality trends in cities.
 
 Key components include:
-- **Data Ingestion**: Automated retrieval of pollutant data (NO₂, PM₁₀, PM₂.₅, O₃, CO) from OpenAQ.
+- **Data Ingestion**: Retrieval of latest pollutant data readings (NO₂, PM₁₀, PM₂.₅, O₃, CO) from OpenAQ.
 - **Data Transformation (dbt + DuckDB)**: Cleaning, standardizing, and structuring data for analysis.
-- **Predictive Modeling**: A Random Forest model trained on historical air quality data is used to forecast air quality for the next 7 days.
-- **Visualization App (Streamlit)**: Displays daily and hourly pollutant forecasts, health risk levels, and trends.
-
-This app shows the **latest 7-day forecast** produced by the pipeline, helping to monitor pollution dynamics and assess air quality trends in Thessaloniki.
+- **Predictive modelling**: A Random Forest model trained on historical air quality (EEA) and weather data (CLIMPACT) is used to forecast air quality for the next 7 days, 
+            based on the respective Open Meteo weather predictions.
+- **Visualization**: Summarizes current readings and daily pollutant forecasts for the following week, while informing users on health risk levels and pollutant information.
 """)
 
 ## Load the tables
@@ -146,206 +72,74 @@ idx = df_current.groupby("parameter")["reading_date"].idxmax()
 latest_df = df_current.loc[idx, ["parameter", "value", "unit"]]
 
 # Create a table with pollutant + unit as column header
-latest_df["column_name"] = latest_df["parameter"].str.upper() + " (" + latest_df["unit"] + ")"
-# Fix: Create the DataFrame properly without an extra index
+latest_df["column_name"] = (
+    latest_df["parameter"].str.upper() + " (" + latest_df["unit"] + ")"
+)
+# Create the DataFrame without an extra index
 final_table = pd.DataFrame([latest_df.set_index("column_name")["value"].to_dict()]).T
-final_table.columns = ["Current Reading (µg/m³)"] 
+final_table.columns = ["Current Reading (µg/m³)"]
 final_table.index.name = "Pollutant"
 
-no2_limits = [0, 40, 90, 120, 230, 340, 1000]
-ozone_limits = [0, 50, 100, 130, 240, 380, 800]
-pm25_limits = [0, 10, 20, 25, 50, 75, 800]
-pm10_limits = [0, 20, 40, 50, 100, 150, 1200] 
-so2_limits = [0, 100, 200, 350, 500, 750, 1250]
 
-very_good_hex = '#188c39'
-good_hex = '#7cb324'
-medium_hex = '#ceb000'
-poor_hex = '#dc9a00'
-very_poor_hex = '#db6d00'
-extremely_poor_hex = '#ca0000'
-
-bin_list = [no2_limits, ozone_limits, pm10_limits, pm25_limits, so2_limits]
-
-verbal_labels = ["Very Good", "Good", "Medium", "Poor", "Very Poor", "Extremely Poor"]
-
-
-def get_bin_color(parameter, value):
-    # Map parameter name to its limits
-    limits_dict = {
-        'NO2 (µg/m³)': no2_limits,
-        'O3 (µg/m³)': ozone_limits,
-        'PM10 (µg/m³)': pm10_limits,
-        'PM25 (µg/m³)': pm25_limits,
-        'SO2 (µg/m³)': so2_limits
-    }
-    colors = [very_good_hex, good_hex, medium_hex, poor_hex, very_poor_hex, extremely_poor_hex]
-
-    limits = limits_dict.get(parameter)
-    if limits is None:
-        return ''  # fallback
-
-    # Determine which bin the value falls into
-    for i in range(len(limits)-1):
-        if limits[i] <= value < limits[i+1]:
-            return colors[i]
-    return colors[-1]  # if value >= highest limit
-
-def get_bin_index(parameter, value):
-    limits_dict = {
-        'NO2 (µg/m³)': no2_limits,
-        'O3 (µg/m³)': ozone_limits,
-        'PM10 (µg/m³)': pm10_limits,
-        'PM25 (µg/m³)': pm25_limits,
-        'SO2 (µg/m³)': so2_limits
-    }
-    limits = limits_dict.get(parameter)
-    if limits is None:
-        return None
-
-    for i in range(len(limits)-1):
-        if limits[i] <= value < limits[i+1]:
-            return i
-    return len(limits)-2  # last bin if value >= highest limit
-
-def get_verbal_status(parameter, value):
-    bin_idx = get_bin_index(parameter, value)
-    if bin_idx is None:
-        return ""
-    return verbal_labels[bin_idx]
-
-
-grey_hex = '#d3d3d3'  # light grey for inactive bins
-colors = [very_good_hex, good_hex, medium_hex, poor_hex, very_poor_hex, extremely_poor_hex]
-def generate_bin_circles(parameter, value):
-    bin_idx = get_bin_index(parameter, value)
-    circles = []
-    for i in range(6):  # always 6 circles
-        color = colors[i] if i == bin_idx else grey_hex
-        # add blink-circle class only for the active circle
-        cls = "blink-circle" if i == bin_idx else ""
-        circles.append(f'<span class="{cls}" style="display:inline-block;width:12px;height:12px;border-radius:50%;margin:1px;background-color:{color}"></span>')
-    return ''.join(circles)
-
-# Streamlit display
-
-html_table = final_table.round(1).to_html(index=True, classes='centered-table')
+html_table = final_table.round(1).to_html(index=True, classes="centered-table")
 # convert index → column, name it 'Pollutant'
-final_table_reset = final_table.reset_index().rename(columns={'column_name': 'Pollutant'})  # if needed
-# ensure the reading column has the desired name
-final_table_reset.columns = ['Pollutant', 'Reading<br>(µg/m³)']
+# Reset index so that 'Pollutant' becomes a proper column
+final_table_reset = final_table.reset_index().rename(columns={"index": "Pollutant"})
 
-final_table_reset['Index'] = final_table_reset.apply(
-    lambda row: generate_bin_circles(row['Pollutant'], row['Reading<br>(µg/m³)']),
-    axis=1
+# Rename reading column for HTML display
+final_table_reset = final_table_reset.rename(
+    columns={"Current Reading (µg/m³)": "Reading<br>(µg/m³)"}
 )
 
-# New column for verbal status
-final_table_reset['Status'] = final_table_reset.apply(
-    lambda row: get_verbal_status(row['Pollutant'], row['Reading<br>(µg/m³)']),
-    axis=1
+# Generate the indicator circles
+final_table_reset["Index"] = final_table_reset.apply(
+    lambda row: generate_bin_circles(row["Pollutant"], row["Reading<br>(µg/m³)"]),
+    axis=1,
+)
+
+# Add verbal status column
+final_table_reset["Status"] = final_table_reset.apply(
+    lambda row: get_verbal_status(row["Pollutant"], row["Reading<br>(µg/m³)"]), axis=1
+)
+
+# Compute the bin index for each pollutant
+final_table_reset["bin_index"] = final_table_reset.apply(
+    lambda row: get_bin_index(row["Pollutant"], row["Reading<br>(µg/m³)"]), axis=1
 )
 
 # render without showing the index (we already have Pollutant as a column)
 # Keep Pollutant, Reading, Status
-html_table = final_table_reset[['Pollutant', 'Reading<br>(µg/m³)', 'Index', 'Status']].round(1).to_html(
-    index=False, classes='centered-table', escape=False
+html_table = (
+    final_table_reset[["Pollutant", "Reading<br>(µg/m³)", "Index", "Status"]]
+    .round(1)
+    .to_html(index=False, classes="centered-table", escape=False)
 )
 
 ## Ring Creation
 
-## Ring Creation
-# Compute the max value
-max_value = final_table['Current Reading (µg/m³)'].max()
-max_pollutant = final_table['Current Reading (µg/m³)'].idxmax()
-max_status = get_verbal_status(max_pollutant, max_value)
+# Find the pollutant with the highest bin index
+max_bin_idx = final_table_reset["bin_index"].max()
+max_pollutant_row = final_table_reset.loc[final_table_reset["bin_index"].idxmax()]
+
+# Extract details
+max_pollutant = max_pollutant_row["Pollutant"]
+max_value = max_pollutant_row["Reading<br>(µg/m³)"]
+max_status = VERBAL_LABELS[max_bin_idx]  # directly from the bin index
 max_color = get_bin_color(max_pollutant, max_value)
 
-st.markdown(f"""
-<style>
-    .centered-table {{
-        margin: auto;
-        text-align: center;
-    }}
-    .centered-table td, .centered-table th {{
-        text-align: center !important;
-        padding: 8px;
-    }}
-    .table-ring-container {{
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 50px;
-        justify-content: center;
-    }}
-    .ring-container {{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }}
-    .table-heading {{
-        text-align: left;  /* Align left */
-        font-size: 22px;
-        font-weight: bold;
-        margin-bottom: 15px;
-        color: white;  /* Adjust color as needed */
-        padding-left: 117.5px;  /* Optional: add left padding for spacing */
-    }}
-</style>
-
-<div class="table-heading">Current Air Quality Reading</div>  
-
-<div class="table-ring-container">
-    <div>{html_table}</div>
-    <div class="ring-container" style="flex-direction: column; display: flex; align-items: center;">
-        <div style="margin-bottom: 10px; font-weight: bold; color: white;">Air Quality Index (AQI)</div>
-        <svg width="110" height="110">
-            <circle 
-                cx="55" 
-                cy="55" 
-                r="45" 
-                fill="none" 
-                stroke="{max_color}" 
-                stroke-width="3" 
-                stroke-dasharray="2,2"
-                class="circle-animated"
-            />
-            <circle 
-                cx="55" 
-                cy="55" 
-                r="53" 
-                fill="none" 
-                stroke="{max_color}" 
-                stroke-width="3" 
-                stroke-dasharray="4,2"                
-            />
-            <text x="55" y="60" text-anchor="middle" font-size="12" font-family="Arial" fill="white">{max_status}</text>
-        </svg>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-## Ring end
+# Rings to display current Index
+st.markdown(
+    create_table_with_ring(html_table, max_color, max_status),
+    unsafe_allow_html=True
+)
 
 # Get today's date
 today = datetime.date.today().strftime("%d-%m-%Y")
 
 # Caption with reference
-st.markdown(f"""
-<style>
-.custom-caption {{
-    font-size: 12px !important;
-    color: #a5a5a5 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1.2 !important;
-}}
-</style>
-
-<p class="custom-caption">
-Data provided by European Environment Agency - Air Quality Download Service API | Updated: {today}
-</p>
-""", unsafe_allow_html=True)
+st.caption("""
+Hourly values (source: European Environment Agency - Air Quality Download Service API)
+""")
 
 # ---------------------
 # Forecast
@@ -364,112 +158,120 @@ if forecast_df is None:
     )
     st.stop()
 
-
-
 # ---------------------
 # Sidebar controls
 # ---------------------
 
-st.markdown("""
-<style>  
-            
-/* Targets the first span (i.e. the box) inside any element with data-baseweb="checkbox" */
-[data-baseweb="checkbox"] > span:first-child {
-    background-color: #2196f3 !important; 
-    border-color: #2196f3 !important; 
-}
-</style>
-""", unsafe_allow_html=True)
-
-# --- sidebar pollutant selector with working "Select All" ---
-# (assumes `st`, `forecast_df`, and `EXPECTED_POLLUTANTS` are defined)
-
-COLUMN_MAPPING = {
-    "forecast_day": "Date",
-    "pm10_value": "PM10 (µg/m³)",
-    "pm25_value": "PM2.5 (µg/m³)",
-    "o3_value": "Ozone (µg/m³)",
-    "no2_value": "NO₂ (ppb)",
-    "so2_value": "SO₂ (ppb)"
-}
-
 st.sidebar.header("Controls")
 
-# which pollutant columns are available
+# Determine available pollutant columns 
 available_pollutants = [p for p in EXPECTED_POLLUTANTS if p in forecast_df.columns]
 if not available_pollutants:
     numeric_cols = forecast_df.select_dtypes("number").columns.tolist()
     available_pollutants = [c for c in numeric_cols if c != "forecast_day"]
 
-# initialize select_all flag the first time
+# Initialize Select All flag
 if "select_all_pollutants" not in st.session_state:
     st.session_state["select_all_pollutants"] = True
 
-# callback when the Select All checkbox is changed by the user
+# Initialize individual checkboxes the first time
+for pollutant in available_pollutants:
+    cb_key = f"checkbox_{pollutant}"
+    if cb_key not in st.session_state:
+        # Default: selected if Select All is True
+        st.session_state[cb_key] = st.session_state["select_all_pollutants"]
+
+# sidebar toggle
+
+# Callbacks related to the select_all_pollutants state
 def _toggle_all():
+    """Triggered when 'Select All' checkbox changes."""
     new_val = st.session_state["select_all_pollutants"]
     for p in available_pollutants:
         st.session_state[f"checkbox_{p}"] = new_val
 
-# callback when any individual checkbox changes -> update Select All state
 def _update_select_all():
-    all_checked = all(st.session_state.get(f"checkbox_{p}", False) for p in available_pollutants)
+    """Triggered when an individual pollutant checkbox changes."""
+    all_checked = all(
+        st.session_state.get(f"checkbox_{p}", False) for p in available_pollutants
+    )
     st.session_state["select_all_pollutants"] = all_checked
 
+# Sidebar UI: Pollutant selection
 selected = []
 with st.sidebar.expander("Select pollutants to display", expanded=True):
-    # Select All checkbox with on_change
     st.checkbox(
         "Select All",
-        value=st.session_state["select_all_pollutants"],
         key="select_all_pollutants",
         on_change=_toggle_all,
     )
 
-    # individual pollutant checkboxes (display friendly name, keep original column name)
     for pollutant in available_pollutants:
         display_name = COLUMN_MAPPING.get(pollutant, pollutant)
         cb_key = f"checkbox_{pollutant}"
-        default_val = st.session_state.get(cb_key, st.session_state["select_all_pollutants"])
-
+        default_val = st.session_state.get(
+            cb_key, st.session_state["select_all_pollutants"]
+        )
         is_selected = st.checkbox(
             display_name,
-            value=default_val,
             key=cb_key,
             on_change=_update_select_all,
         )
         if is_selected:
             selected.append(pollutant)
 
-
-
-# Date range selector
+# --- Date range selector ---
 min_date = forecast_df["forecast_day"].min().date()
 max_date = forecast_df["forecast_day"].max().date()
 date_range = [min_date, max_date]
+
 if isinstance(date_range, list) and len(date_range) == 2:
     start_date, end_date = date_range
 else:
     start_date, end_date = min_date, max_date
 
+# Color scale legend
+
+st.sidebar.header("Pollutant index scaling")
+
+st.sidebar.markdown("""
+<div class="aqi-scale">
+    <div class="aqi-step-row">
+        <div class="aqi-step" style="background-color:#188c39;"></div>
+        <span class="aqi-label">Very good</span>
+    </div>
+    <div class="aqi-step-row">
+        <div class="aqi-step" style="background-color:#7cb324;"></div>
+        <span class="aqi-label">Good</span>
+    </div>
+    <div class="aqi-step-row">
+        <div class="aqi-step" style="background-color:#ceb000;"></div>
+        <span class="aqi-label">Medium</span>
+    </div>
+    <div class="aqi-step-row">
+        <div class="aqi-step" style="background-color:#dc9a00;"></div>
+        <span class="aqi-label">Poor</span>
+    </div>
+    <div class="aqi-step-row">
+        <div class="aqi-step" style="background-color:#db6d00;"></div>
+        <span class="aqi-label">Very poor</span>
+    </div>
+    <div class="aqi-step-row">
+        <div class="aqi-step" style="background-color:#ca0000;"></div>
+        <span class="aqi-label">Extremely poor</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ---------------------
 # Filter data
 # ---------------------
 
-# Define the new, user-friendly column names
-COLUMN_MAPPING = {
-    "forecast_day": "Date",
-    "pm10_value": "PM10 (µg/m³)",
-    "pm25_value": "PM2.5 (µg/m³)",
-    "o3_value": "Ozone (µg/m³)",
-    "no2_value": "NO₂ (ppb)",
-    "so2_value": "SO₂ (ppb)"
-}
-
 # --- Data Filtering and Preparation ---
 # Filter by date range
-mask = (forecast_df["forecast_day"].dt.date >= start_date) & (forecast_df["forecast_day"].dt.date <= end_date)
+mask = (forecast_df["forecast_day"].dt.date >= start_date) & (
+    forecast_df["forecast_day"].dt.date <= end_date
+)
 df_filtered = forecast_df.loc[mask].copy()
 
 # Filter by selected pollutants
@@ -478,176 +280,417 @@ columns_to_keep = ["forecast_day"] + [p for p in selected if p in df_filtered.co
 df_filtered = df_filtered[columns_to_keep]
 
 st.subheader("Forecast table (7-day)")
-st.markdown("Daily Average Values")
 
 # 1. Prepare data for display
 df_filtered_display = df_filtered.copy()
-df_filtered_display["forecast_day"] = df_filtered_display["forecast_day"].dt.strftime("%d-%m-%Y")
+df_filtered_display["forecast_day"] = df_filtered_display["forecast_day"].dt.strftime(
+    "%d-%m-%Y"
+)
 
 # 2. Round numeric pollutant columns to 1 decimal place
 for p in EXPECTED_POLLUTANTS:
     if p in df_filtered_display.columns:
         df_filtered_display[p] = df_filtered_display[p].round(1)
 
-# 3. RENAME THE COLUMNS
+# 3. Rename the columns
 # Create a dictionary with only the columns present in the DataFrame
-rename_map = {old_name: new_name for old_name, new_name in COLUMN_MAPPING.items() if old_name in df_filtered_display.columns}
+rename_map = {
+    old_name: new_name
+    for old_name, new_name in COLUMN_MAPPING.items()
+    if old_name in df_filtered_display.columns
+}
 
 df_filtered_display.rename(columns=rename_map, inplace=True)
 
-# Convert DataFrame to list of dicts and display
-st.dataframe(df_filtered_display.to_dict(orient="records"), use_container_width=True)
+# 4. Convert DataFrame to list of dicts and display
+st.dataframe(df_filtered_display.to_dict(orient="records"), width='stretch')
 
+# add a caption
+st.caption("Daily Average Values (predicted)")
 
 # Individual pollutant bars
-st.write("### Individual pollutant forecasts")
+st.subheader("Individual pollutant forecasts")
 
-# Define AQI category limits and colors
-limit_dict = {
-    "no2_value": [0, 40, 90, 120, 230, 340, 1000],
-    "o3_value": [0, 50, 100, 130, 240, 380, 800],
-    "pm10_value": [0, 20, 40, 50, 100, 150, 1200],
-    "pm25_value": [0, 10, 20, 25, 50, 75, 800],
-    "so2_value": [0, 100, 200, 350, 500, 750, 1250],
-}
-
-aqi_colors = [
-    '#188c39',  # Very good
-    '#7cb324',  # Good
-    '#ceb000',  # Medium
-    '#dc9a00',  # Poor
-    '#db6d00',  # Very poor
-    '#ca0000',  # Extremely poor
-]
-
-def get_color(value, limits):
-    """Return the color corresponding to the AQI bin."""
-    for i in range(len(limits) - 1):
-        if limits[i] <= value < limits[i + 1]:
-            return aqi_colors[i]
-    return aqi_colors[-1]  # last category if above all thresholds
-
-
-cols = st.columns(len(selected), gap="large") 
+if selected:
+    cols = st.columns(len(selected), gap="large")
+    for col, pollutant in zip(cols, selected):
+        with col:
+            st.write(f"Displaying: {pollutant}")
+else:
+    st.warning("Please select at least one pollutant to display.")
 for i, pollutant in enumerate(selected):
     with cols[i]:
         # Choose correct limits
-        limits = limit_dict.get(pollutant)
+        limits = LIMIT_DICT.get(pollutant)
         if limits is None:
-            st.warning(f"No AQI limits defined for {pollutant}. Using default grey bars.")
-            bar_colors = ['#999999'] * len(df_filtered)
+            st.warning(
+                f"No AQI limits defined for {pollutant}. Using default grey bars."
+            )
+            bar_colors = ["#999999"] * len(df_filtered)
         else:
-            bar_colors = [get_color(v, limits) if pd.notna(v) else '#d3d3d3'
-                          for v in df_filtered[pollutant]]
+            bar_colors = [
+                get_color(v, limits) if pd.notna(v) else "#d3d3d3"
+                for v in df_filtered[pollutant]
+            ]
 
         fig_p = px.bar(
             df_filtered,
             x="forecast_day",
             y=pollutant,
             labels={pollutant: "µg/m³"},
-            color=bar_colors,  # Color per bar
+            color=bar_colors,  
             color_discrete_map="identity",
-            height=200 
+            height=200,
         )
+
+        # Format y-axis to 1 decimal
+        fig_p.update_yaxes(tickformat=".1f")
 
         fig_p.update_layout(
             title_text=pollutant.replace("_value", "").upper(),
             xaxis_title=None,
             yaxis_title=None,
             showlegend=False,
-            bargap=.2,
+            bargap=0.2,
             yaxis=dict(
-                # ticks='outside',
-                # ticklen=10,
                 ticklabelstandoff=-5
-            )
+            ),
         )
 
         fig_p.update_traces(
+            hovertemplate="Day: %{x}<br>" + pollutant.replace("_value", "").upper() + ": %{y:.1f} µg/m³<extra></extra>",
             marker=dict(
-                cornerradius=5  # Adjust the radius value (in pixels) as needed
-            )
+                cornerradius=5  
+            )            
         )
 
         # Make y-axis start from 0
-        fig_p.update_yaxes(
-            rangemode="tozero"
-        )
+        fig_p.update_yaxes(rangemode="tozero")
+        config = {'width': 'stretch'}
 
-        st.plotly_chart(fig_p, use_container_width=True)
+        st.plotly_chart(fig_p, config=config)
 
-
+st.caption("""
+Bar colors for each pollutant correspond to the Pollutant index scaling provided on the sidebar on the left, e.g. 'Good', 'Very Good' etc.
+""")
 
 # ---------------------
 # Download / Export
 # ---------------------
 csv_bytes = df_filtered.to_csv(index=False).encode("utf-8")
-st.download_button("Download filtered forecast CSV", data=csv_bytes, file_name="forecast_results_filtered.csv", mime="text/csv")
+st.download_button(
+    "Download filtered forecast CSV",
+    data=csv_bytes,
+    file_name="forecast_results_filtered.csv",
+    mime="text/csv",
+)
 
 ## Future Predictions
 
 # Convert timestamp
 df_predictions["timestamp"] = pd.to_datetime(
-    df_predictions["reading_date"].astype(str) + " " + df_predictions["reading_time"].astype(str)
+    df_predictions["reading_date"].astype(str)
+    + " "
+    + df_predictions["reading_time"].astype(str)
 )
 df_predictions_sorted = df_predictions.sort_values("timestamp")
 
-st.header("What are PM2.5?")
 st.markdown("""
-<p style="line-height:1.4; margin-bottom:10px;">
-They are <b>fine inhalable particles</b>, with diameters that are generally <b>2.5 micrometers and smaller</b>.
-</p>
-<p style="line-height:1.4; margin-bottom:10px;">
-They can be made up of hundreds of different chemicals: some are emitted directly from sources such as construction sites, unpaved roads, or fires. Most PM2.5 particles form in the atmosphere as a result of <b>complex reactions of chemicals</b> emitted from power plants, industries, and automobiles.
-</p>
-<p style="line-height:1.4; margin-bottom:10px;">
-They are so small that they can be inhaled and cause serious health problems.
-</p>
-""", unsafe_allow_html=True)
-
-st.subheader("How small is 2.5 micrometers?")
-
-st.markdown("""
-Think about a single human hair: the average hair is about **70 micrometers** in diameter – making it **30 times larger** than the largest fine particle!
+---
 """)
 
-svg_code = """
-<svg viewBox="0 0 450 300" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    .st0{fill:none;stroke:#ffffff;stroke-width:2;stroke-miterlimit:10;}
-    .label{fill:white; font-size:10px; }
-  </style>
+st.header("1. Understanding the Data")
 
-  <!-- Big circle (hair) -->
-  <circle cx="204" cy="184" r="70" class="st0"/>
-  <!-- Label for big circle -->
-  <text x="10" y="70" class="label">Human Hair (~70 µm)</text>
-  
-  <!-- Small circle (PM2.5) -->
-  <circle cx="298.5" cy="251" r="2.5" class="st0"/>
-  <!-- Label for small circle -->
-  <text x="365" y="207.5" class="label">PM2.5 (~2.5 µm)</text>
-  
-  <!-- Arrow from small circle -->
-  <path d="M303,242 Q328,210,353,206" stroke="white" stroke-width="1" fill="none" />
-  <line x1="351" y1="201" x2="359" y2="204" stroke="white" stroke-width="1" />
-  <line x1="359" y1="204" x2="353" y2="210" stroke="white" stroke-width="1" />
-  
-  <!-- Arrow from big circle -->
-  <path d="M160,118 Q130,90 96,87" stroke="white" stroke-width="1" fill="none" />
-  <line x1="96" y1="92.5" x2="89" y2="85.5" stroke="white" stroke-width="1" />
-  <line x1="89" y1="85.5" x2="97" y2="80.5" stroke="white" stroke-width="1" />
-</svg>
+st.markdown("""
+The air quality of a region is determined by the concentration of several key pollutants at ground level. The table below gives a 
+brief description of each pollutant, their main sources and the respective EU air quality standards and objectives:
+""")
+
+# Data for pollutants
+pollutants = pd.DataFrame({
+    "Pollutant": ["PM₂.₅", "PM₁₀", "NO₂", "O₃", "SO₂"],
+    "Description": [
+        "Fine particulate matter (diameter ≤ 2.5 µm). Penetrates deep into lungs and bloodstream.",
+        "Coarse particulate matter (diameter ≤ 10 µm). Causes respiratory irritation and reduced lung function.",
+        "Nitrogen dioxide - mainly from traffic and industrial combustion. Affects lungs and contributes to smog.",
+        "Ozone - forms through sunlight reacting with other pollutants. Causes coughing and throat irritation.",
+        "Sulphur dioxide - produced from burning fossil fuels. Causes respiratory problems and acid rain."
+    ],
+    "EU Limit (µg/m³)": ["20 (annual)", "40 (annual)", "40 (annual)", "120 (8h avg)", "125 (24h avg)"],
+    "Main Sources": [
+        "Vehicle emissions, residential heating, industrial processes",
+        "Road dust, construction sites, agriculture, industrial activities",
+        "Traffic emissions, power plants, industrial combustion",
+        "Photochemical reactions involving NO₂ and VOCs under sunlight",
+        "Burning of coal and oil in power plants and industries"
+    ]
+})
+
+# Pollutants descriptions table
+# Render table
+st.markdown(pollutants.to_html(index=False, classes='centered-table'), unsafe_allow_html=True)
+
+# Optional info note
+st.info("""        
+EU limit values apply over different periods of time (daily, annual, or 8-hour) because the observed health impacts 
+        associated with the various pollutants occur over different exposure times. 
+""")
+
+st.caption("""
+Source: [EU air quality standards](https://environment.ec.europa.eu/topics/air/air-quality/eu-air-quality-standards_en)
+""")
+
+st.subheader("1.1. How small are PM2.5?")
+st.markdown(
 """
-
-st.markdown(svg_code, unsafe_allow_html=True)
-
-st.write("---")
-st.caption(
-    """
-**Data Sources**  
-- **Air Quality:** European Environment Agency – [Air Quality Download Service API](https://www.eea.europa.eu/data-and-maps/data/aqereporting-9)  
-- **Weather Predictions:** [Open-Meteo API](https://open-meteo.com/)  
-- **Historic Weather Data:** [CLIMPACT](https://data.climpact.gr/en/dataset/497dc26d-45e0-4ad5-b8f3-5f8890f65129)  
-"""
+PM2.5 are <b>fine inhalable particles</b>, with diameters that are generally <b>2.5 micrometers and smaller</b>.
+They are so small that they can be inhaled and cause serious health problems.
+Think about a single human hair: the average hair is about <b>70 micrometers</b> in diameter - making it <b>30 times larger</b> than the largest fine particle!
+""",
+    unsafe_allow_html=True,
 )
+
+# Display PM particles diagram
+st.markdown(
+    create_pm_particles_diagram(), 
+    unsafe_allow_html=True  # ← This too!
+)
+
+st.subheader("1.2. Data Sources")
+
+st.markdown(
+"""
+* **Air Quality** data are sourced from the **European Environment Agency (EEA)**, an agency of the European Union that provides insights 
+on the state of Europe's environment. Its aim is to support Europe's environment and climate policies through the data it provides.
+The specific data is pulled from its [Air Quality Download Service API](https://www.eea.europa.eu/data-and-maps/data/aqereporting-9).
+    * Historic data covers the period between 01/01/2023-31/12/2023.
+    * For the forecast model, the latest reading - falling within the last 24hrs - is used.
+* **Weather Forecasts** are sourced from [Open-Meteo](https://open-meteo.com/), which provides an open-source weather API 
+and offers free access for non-commercial use.
+    * The forecast covers the next 7 days from the date of the request.
+* **Historic Weather Data** was downloaded from [CLIMPACT](https://data.climpact.gr/en/dataset/497dc26d-45e0-4ad5-b8f3-5f8890f65129),
+an initiative on climate change to coordinate a nation-wide network of institutions responsible for the integration, harmonization, 
+and optimization of existing climate services, early warning systems and measurements from relevant national infrastructures in Greece. 
+    * Historic data covers the period between 01/01/2023-31/12/2023.
+""")
+
+st.subheader("1.3. Measurement Units")
+
+st.markdown(
+"""
+| Variable | Unit | Description |
+| :--- | :--- | :--- |
+| Air Pollutants | µg/m³ | Micrograms per cubic meter |
+| Mean temperature | °C (degrees Celsius) | Average air temperature over the day. |
+| Mean relative humidity | % (percent) | Average percentage of humidity in the air. |
+| Accumulated rainfall (precipitation) | mm (millimeters) | Total rainfall for the day. |
+| Mean wind speed | m/s (meters per second) | Average wind speed during the day. |
+| Dominant wind direction | ° (degrees) | Wind direction measured clockwise from north (0°), e.g., 90° = east wind. |
+---
+""")
+
+# Main app layout
+st.header("2. Methodology")
+
+
+
+st.markdown("""
+The project follows a modular **data operations (DataOps)** architecture designed to ensure **daily automation**, **traceability**, and **scalability** across multiple data sources.  
+The pipeline integrates raw air quality and meteorological data, transforms them into structured analytical tables, and prepares them for the predictive model and dashboard visualization.
+""")
+st.subheader("2.1. Data Ingestion")
+st.markdown("""
+Two external APIs are queried daily through an **Airflow DAG**:
+
+- **OpenAQ API:** retrieves near real-time pollutant concentrations (PM₂.₅, PM₁₀, NO₂, O₃, SO₂).  
+- **Open-Meteo API:** provides weather data (temperature, humidity, wind speed, precipitation, wind direction).  
+
+Each ingestion task stores the raw JSON responses in the project’s `ingestion/raw_data` directory, ensuring reproducibility and versioning.
+""")
+st.subheader("2.2. Transformation Layer")
+st.markdown("""
+Raw files are processed using **dbt (Data Build Tool)**, which performs sequential transformations through three layers:
+
+- **Staging (`stg_`):** converts the raw JSON into flattened, queryable tables.  
+- **Intermediate Cleaning (`stg_openaq_data`):** standardizes column names, units, and timestamps.  
+- **Marts (`analysis_air_quality`):** deduplicates data, harmonizes metrics between sources, and outputs analysis-ready tables.  
+
+The marts layer serves as the **single source of truth** for subsequent modeling and visualization.
+
+""")
+st.subheader("2.3. Orchestration and Scheduling")
+st.markdown("""
+All ingestion and transformation tasks are orchestrated through an **Apache Airflow DAG**, which:
+
+- Defines dependencies between tasks (Ingestion → Transformation → Forecasting).  
+- Runs automatically on a **daily schedule** (`@daily`).  
+- Includes retry logic and error handling for robust execution.  
+
+This orchestration ensures that both air quality and weather datasets are refreshed before model execution.
+""")
+st.subheader("2.4. Integration with Forecasting and Visualization")
+st.markdown("""
+The **Random Forest forecast script** consumes the cleaned data from the marts tables and the most recent air quality readings for each station.  
+After predictions are generated, the results are passed to the **Streamlit application**, which visualizes both the **latest observed values** and the **7-day forecast** for each pollutant.
+
+The resulting pipeline ensures an **end-to-end automated workflow** — from raw data acquisition to interpretable insights.
+""")
+
+st.markdown("The data processing and forecasting architecture flow chart is provided below:")
+
+# Flow chart insert code
+
+# wrap the function that follows to display its content inside a modal dialog
+@st.dialog("Data Analysis & Forecast Pipeline", width="large", dismissible=True)
+def show_flow_chart():
+    st.image("visualization/images/flow_chart.png", width='content')
+    st.caption("Detailed flow of the Data Analysis and Forecast Pipelines.")
+    st.markdown("Click outside or press ESC to close.")
+
+# Button to trigger the dialog
+if st.button("View Flow Chart"):
+    show_flow_chart()
+
+# End of Flow Chart
+
+st.markdown("""
+---
+""")
+
+st.header("3. Predictive Modeling")
+
+st.markdown("""
+The predictive component of this project was developed through a structured regression workflow combining **meteorological** and **air quality data** for Thessaloniki (2023).
+""")
+st.subheader("3.1. Data Integration")
+st.markdown("""
+   - Historical **air quality data** (PM₂.₅, PM₁₀, NO₂, O₃, SO₂) were retrieved from the European Environment Agency.  
+   - Corresponding **meteorological variables** (temperature, humidity, wind speed, rainfall, wind direction) were imported from the CLIMPACT and Open-Meteo datasets.  
+   - Both datasets were harmonized on a **daily timescale** and merged by date.  
+""")
+st.subheader("3.2. Feature Engineering")
+st.markdown("""
+   - Pollutant values were aggregated from **hourly to daily means**.  
+   - A **month variable** was added to capture **seasonal effects**.  
+   - **Temporal autocorrelation** was modeled by including each pollutant’s previous-day mean as a new predictor (e.g., `pm25_value_prev`).  
+   - **Wind direction** was converted from compass points to numerical degrees.  
+""")
+st.subheader("3.3. Data Cleaning & Validation")
+st.markdown("""
+   - Outliers and invalid readings were replaced with NaN and removed post-merge.  
+   - Multicollinearity was examined using **Variance Inflation Factor (VIF)** to ensure model stability.  
+""")
+st.subheader("3.4. Data Exploration")
+st.markdown("""
+   At this stage, the relationships between **meteorological** and **pollutant** variables was examined:
+""")
+
+fig = px.imshow(
+    corr_subset,
+    text_auto=".2f",        
+    color_continuous_scale="RdBu_r",
+    aspect="auto",
+)
+
+fig.update_layout(
+    title="Correlation Heatmap",
+    xaxis_title="Targets",
+    yaxis_title="Predictors"
+)
+
+st.plotly_chart(fig, use_container_width=True) 
+
+st.markdown("""            
+    - Bivariate Correlation Analysis: The strongest correlations were found between each pollutant’s *current and previous-day values* 
+            (O₃: 0.88, SO₂: 0.85, PM₂.₅: 0.78, PM₁₀: 0.70), indicating **temporal autocorrelation**, i.e. pollutant values in a time series are correlated with their own past values.
+        - Temperature showed a moderate positive correlation with **O₃** (0.38), consistent with photochemical lower ground ozone formation on warmer days.
+        - Wind speed showed a moderate negative correlations with most pollutants, reflecting its role in **pollutant dispersion**.
+        - **Relative humidity** and **precipitation** were weakly correlated overall, indicating limited impact on daily pollutant levels.
+        - Seasonal Effects: Summer months (July-August) were strongly associated with higher **O₃** concentrations, driven by strong sunlight and heat. 
+            Winter months (December-January) correlated positively with **PM₁₀**, likely due to increased **domestic heating** activities. 
+""")
+
+# Rename columns for display
+df_monthly = df_monthly.rename(columns=COLUMN_MAPPING)
+
+# Select only the mapped columns for the y-axis
+y_columns = [col for col in df_monthly.columns if col in COLUMN_MAPPING.values()]
+
+fig = px.line(
+    df_monthly,
+    x='month',          
+    y=y_columns,
+    title='Yearly Mean Pollutant Concentration (µg/m³)',
+    labels={'value': 'Concentration (µg/m³)', 'variable': 'Pollutant', 'month': 'Month'}
+)
+
+st.plotly_chart(fig, use_container_width=True)
+            
+st.markdown("""
+    - Scatterplot Analysis: Scatter plots confirmed positive associations between **O₃ and temperature**, and negative associations between **NO₂ and wind speed**.  
+
+    - Multicollinearity Assessment: Variance Inflation Factor (VIF) analysis revealed high collinearity among certain predictors 
+            (e.g., *previous-day pollutants* and *relative humidity*, VIF > 20). However, as the subsequent modeling phase employed a **Random Forest Regressor**, 
+            which is *non-linear and robust to multicollinearity*, no variables were excluded.  
+""")
+st.subheader("3.5. Model Selection & Training")
+st.markdown("""
+   - Given the **non-linear** and **interdependent** nature of pollutant behavior, a **Random Forest Regressor** was chosen over linear models.  
+   - The model was trained on 70% of the dataset and tested on the remaining 30%, using meteorological, temporal, and lag variables as predictors.  
+""")
+st.subheader("3.6. Evaluation Metrics")
+st.markdown("""
+   - Model performance was evaluated with **R²** and **Root Mean Squared Error (RMSE)** for each pollutant: 
+    """)
+
+# Rename pollutant column
+df_metrics_display = df_metrics.copy()
+df_metrics_display['pollutant'] = df_metrics_display['pollutant'].map(COLUMN_MAPPING)
+# Set pollutant as index
+df_metrics_display[['R2', 'RMSE']] = df_metrics_display[['R2', 'RMSE']].round(2)
+df_metrics_display = df_metrics_display.set_index('pollutant')
+df_metrics_display.index.name = "Pollutant"
+
+# Center the table using columns
+col1, col2, col3 = st.columns([1, 1, 1])
+with col2:
+    st.dataframe(df_metrics_display, width=230)
+
+st.markdown(""" 
+    Results show better predictability for pollutants driven by **meteorological processes** (O₃, PM₂.₅, SO₂) and lower accuracy for **localized emissions** (NO₂, PM₁₀).
+""")
+
+st.markdown("""
+---
+""")
+
+st.header("4. Findings")
+st.subheader("4.1. Conclusions")
+
+st.markdown("""
+This Air Quality DataOps pipeline provides real-time monitoring and predictive modelling of air quality indicators based on meteorological input for Thessaloniki, Greece.
+Its purpose is to demonstrate a case study for environmental monitoring while providing insights into pollutant dynamics through data analysis.
+The pipeline ingests transforms raw environmental data using open-source APIs, makes future estimates using machine learning techniques
+and renders the results to an easy to understand web-page that can inform citizens about upcoming air quality conditions.
+""")
+st.subheader("4.2. Limitations")
+st.markdown("""
+While the model performs good for a pipeline demonstration, several limitations should be taken into account if a complete model is to be built:
+- Traffic-related pollutants (NO₂, PM₁₀) require additional predictors such as traffic volume, day-of-week patterns, proximity to major roads etc. to improve forecast accuracy
+- Spatial heterogeneity within Thessaloniki is not captured; the current model treats the city as a single monitoring zone
+- Short-term events (e.g., dust storms, wildfires, industrial incidents) are not accounted for in the forecasts
+""")
+
+
+
+
+
+
+
+
+
+
+
+
+
+

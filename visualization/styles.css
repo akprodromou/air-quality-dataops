@@ -1,0 +1,128 @@
+/* Fonts */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+/* Titles font */
+div[data-testid="stMarkdownContainer"] h1, 
+div[data-testid="stMarkdownContainer"] h2, 
+div[data-testid="stMarkdownContainer"] h3 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* Captions font size */
+div[data-testid="stCaptionContainer"] p {
+    font-size: 11px;       
+}
+
+/* Current Air Pollutant Readings Table */
+            
+.centered-table {
+    margin: auto;
+    text-align: center;
+}
+.centered-table td, .centered-table th {
+    text-align: center !important;
+    padding: 8px;
+}
+
+/* Blink animation for active circle */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.65; }
+    100% { opacity: 1; }
+}
+        
+.blink-circle {
+    animation: pulse 3s infinite ease-in-out; 
+}
+        
+.circle-animated {
+    animation: pulse 3s infinite ease-in-out; 
+}
+            
+/* Index Ring */
+.table-ring-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;  /* align items to the top */
+    gap: 40px;  /* space between table and ring */
+    justify-content: center;  /* center the content horizontally */
+}
+
+/* Make the table take up appropriate space */
+.table-ring-container > div:first-child {
+    flex: 1;  /* allows table to take available space */
+    max-width: 600px;  /* adjust as needed */
+}
+
+/* Ring container styling */
+.ring-container {
+    flex-shrink: 0;  /* prevents ring from shrinking */
+    min-width: 150px;  /* ensures ring has enough space */
+}
+            
+
+/* Make responsive for smaller screens */
+@media (max-width: 768px) {
+    .table-ring-container {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Change sidebar checkbox color */  
+[data-baseweb="checkbox"] > span:first-child {
+    background-color: #2196f3 !important; 
+    border-color: #2196f3 !important; 
+}
+            
+/* Sidebar Index Scale styling */
+.aqi-scale {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    align-items: flex-start;
+    margin-top: 5px; 
+    margin-bottom: 14px; 
+    font-size: 12px;
+    gap: 8px; /* space between rows */
+    max-width: 450px;
+}
+.aqi-step-row {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* space between circle and label */
+}
+.aqi-step {
+    width: 18px;           
+    height: 18px;          
+    border-radius: 50%;    /* make it a circle */
+    flex-shrink: 0;        /* prevent circle from shrinking */
+}
+.aqi-label {
+    font-size: 12px;
+    color: #c5c5c5;
+}
+
+/* Pollutant descriptions table */
+.centered-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left !important;
+}
+.centered-table th {
+    background-color: #1c1c1c;
+    color: #ffffff;
+    padding: 10px;
+    text-align: left !important;
+}
+.centered-table td {
+    padding: 8px 10px;
+    color: #e5e5e5;
+    text-align: left !important;
+}
+.centered-table tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
