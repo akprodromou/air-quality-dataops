@@ -5,48 +5,40 @@ This project demonstrates a simple DataOps workflow for collecting, storing, and
 ## Project Structure
 
 ```
-.
-├── .env
-├── .venv
-├── dags_data
-├── data
-│   ├── air_quality.duckdb
-│   ├── data_ingestion
-│   │   └── raw_data
-│   │       └── ingest_openaq_data.py
-│   └── data_transformation
-│       └── air_quality_dbt
-├── logs
-├── orchestration
-│   ├── air_quality_pipeline.py
-│   └── example_dag.py
-├── docker-compose.yml
-├── Dockerfile
-├── explore_duckdb.py
-├── visualizations
-│   └── visualize_air_quality.py
-│   └── air_quality_plot.png
-├── README.md
-└── requirements.txt
+AIR-QUALITY-DATA.../
+├── data/                           # Raw, historic, and forecast data
+├── ingestion/                      # Scripts to collect OpenAQ & weather data
+├── transformation/                 # DBT models and ETL logic
+├── AQ_predictive_modeling_files/   # Random Forest model & forecasting scripts
+├── visualization/                  # Streamlit app, plotting, and styling
+├── orchestration/                  # Pipeline orchestration scripts
+└── logs/                           # Logs for ingestion, transformation, and model runs
+
 ```
 
 ## Features
 
 ### Data Ingestion
-- Fetches air quality measurements from the OpenAQ API.
-- Saves raw JSON files locally in `data/data_ingestion/raw_data/`.
+- Fetches air quality measurements from the OpenAQ API and weather data from external sources.  
+- Saves raw JSON files locally in `data/ingestion/raw_data/`.  
 
-### Data Storage
-- Stores ingested JSON data in DuckDB.
-- Converts JSON to structured tables: `ingested_openaq_data` and `stg_openaq_data`.
+### Data Storage & Transformation
+- Stores ingested data in DuckDB.  
+- Transforms raw JSON into structured tables (`ingested_openaq_data`, `stg_openaq_data`).  
+- DBT models handle staging, intermediate tables, and final data marts.  
 
 ### Data Orchestration
-- Airflow DAG (`air_quality_pipeline.py`) automates ingestion and transformation.
-- Schedule defined as daily (`@daily`) in Airflow.
+- Airflow DAG (`AIR_quality_pipeline.py`) automates ingestion, transformation, and storage.  
+- Scheduled to run daily (`@daily`) with logging of process outcomes.  
+
+### Predictive Modeling
+- Random Forest model predicts future pollutant concentrations.  
+- Model artifacts stored in `AQ_predictive_modeling_files/`.  
+- Forecasts can be generated programmatically via `rf_forecast.py`.  
 
 ### Data Visualization
-- `visualize_air_quality.py` reads from DuckDB and creates charts using Plotly.
-- Visualizations include time series of pollutants (CO, NO2, O3, PM10, PM2.5, SO2).
+- Interactive Streamlit app (`streamlit_app.py`) reads from DuckDB and displays dynamic charts.  
+- Visualizations include pollutant time series, historical trends, and forecasted air quality levels.  
 
 ## Requirements
 
@@ -55,8 +47,13 @@ This project demonstrates a simple DataOps workflow for collecting, storing, and
 - Pandas
 - Plotly
 - Requests
+- Streamlit
+- scikit-learn
+- joblib
+- DBT (e.g., dbt-core, dbt-duckdb)
 - Airflow (if running DAGs in Docker)
-- Docker & Docker Compose (for local orchestration)
+- Docker 
+- python-dotenv (for environment variables)
 
 Install Python dependencies via:
 
@@ -68,41 +65,50 @@ pip install -r requirements.txt
 
 ### Run Data Ingestion
 ```bash
-python data/data_ingestion/raw_data/ingest_openaq_data.py
+python ingestion/ingest_openaq_data.py
+python ingestion/ingest_weather_data.py
 ```
-This fetches the latest air quality data and saves JSON files in `data/data_ingestion/raw_data/`.
+This fetches the latest air quality data and saves JSON files in `ingestion/raw_data/`.
 
 ### Populate DuckDB
 ```bash
-python explore_duckdb.py
+python ingestion/ingest_openaq_data.py
 ```
-This reads all raw JSON files and populates the `stg_openaq_data` table in `data/air_quality.duckdb`.
+Reads all raw JSON files (air quality and weather) and populates the `ingested_openaq_data` and `stg_openaq_data` tables in `data/air_quality.duckdb`.
+Can be run manually or as part of the Airflow pipeline.
+
+### Run Predictive Model
+```bash
+python AQ_predictive_modeling_files/rf_forecast.py
+```
+Generates forecasts for future pollutant concentrations using the Random Forest model.
+Model parameters are stored in AQ_predictive_modeling_files/.
 
 ### Visualize Data
 ```bash
-python visualizations/visualize_air_quality.py
+streamlit run visualization/streamlit_app.py
 ```
-Generates interactive charts for pollutants over time.
+Launches the interactive Streamlit app.
 
-### Optional: Run Airflow DAG
+Explore pollutant trends, historical data, and forecasted air quality levels..
+
+### Run Airflow DAG
 ```bash
 docker-compose up -d
 ```
-- Airflow will run the `air_quality_pipeline` DAG according to the schedule (`@daily`).
+- Starts Airflow (webserver + scheduler) and runs the air_quality_pipeline DAG according to its schedule (@daily).
 - Access the Airflow web UI at [http://localhost:8081](http://localhost:8081).
 
 ## Notes
 
 - The project currently fetches data from the "Agia Sofia" station in Thessaloniki.
-- The pollutants tracked are CO, NO2, O3, PM10, PM2.5, and SO2 (units: µg/m³).
-- For portfolio purposes, the project runs locally or via Docker; no cloud deployment is required.
+- The pollutants tracked are NO2, O3, PM10, PM2.5, and SO2 (units: µg/m³).
 
-<!-- We use dbt models to transform the raw JSON data into staging tables (stg_ingested_openaq_data, stg_openaq_data) before applying further transformations. -->
 
 # Pre-Deployment Checklist for Airflow DAGs with DBT
 
 To run tests locally, first export paths:
-```
+```bash
 export RAW_DATA_PATH_AIR_QUALITY=/Users/anton/Desktop/air-quality-dataops/ingestion/raw_data/air_quality
 export RAW_DATA_PATH_WEATHER=/Users/anton/Desktop/air-quality-dataops/ingestion/raw_data/weather
 export DUCKDB_PATH=/Users/anton/Desktop/air-quality-dataops/data/air_quality_weather.duckdb
@@ -112,8 +118,10 @@ export DUCKDB_PATH=/Users/anton/Desktop/air-quality-dataops/data/air_quality_wea
 
 Run ingestion scripts locally to verify data fetching and file writing:
 
+```bash
 python ingestion/ingest_openaq_data.py
 python ingestion/ingest_weather_data.py
+```
 
 Check that raw JSON/CSV files exist in:
 
@@ -126,63 +134,71 @@ Ensure data shape is as expected (e.g., correct keys in JSON).
 
 Navigate to your DBT project:
 
+```bash
 cd transformation/aq_weather_dbt
+```
 
 Check configuration and connection:
 
+```bash
 dbt debug --profiles-dir .
+```
 
 Run all staging and analysis models:
 
+```bash
 dbt run --models stg_ingested_openaq_data stg_openaq_data analysis_air_quality \
           stg_ingested_weather_data stg_weather_data analysis_weather
+```
 
 Run tests:
 
+```bash
 dbt test
-
+```
 This will catch:
 
 - Misconfigured profiles or database connections
 - SQL compilation/run errors
 - Failed column tests (nulls, accepted values, unique constraints)
 
-- The stg_ingested_* models mirror the API schema. We don’t touch them except for flattening/renaming. That way, we can always debug against the original feed.
+## Model layers explained
 
-- The staging model (stg_openaq_data) is doing exactly what it should. This is where you remove obvious junk (null IDs, invalid country codes, etc.) and apply basic transformations
-
-- Extracting and flattening nested JSON structures
-- Renaming columns to business-friendly names
-- Light filtering (specific parameters only)
-- Standardizing data types
-
-- Intermediate (sometimes called int_ or “core” models): this is the layer where you enforce data quality rules like deduplication, keeping the latest record, or normalizing across sources. It gives you predictable, clean tables for downstream marts.
-
+- The `stg_ingested_*` models mirror the API schema. No transformation is applied on it, except for flattening. That way, we can always debug against the original feed.
+- The staging model (`stg_openaq_data`) is where we remove obvious junk (null IDs, invalid country codes, etc.) and apply basic transformations:
+    - Extracting and flattening nested JSON structures
+    - Renaming columns to business-friendly names
+    - Light filtering (specific parameters only)
+    - Standardizing data types
+- Intermediate `int_openaq_deduped` is the layer where we enforce data quality rules like deduplication, keeping the latest record, or normalizing across sources. 
+It gives us predictable, clean tables for downstream marts.
+- Marts (`mrt_*`) the final, analytics-ready tables that aggregate, summarize, and structure data for specific use cases, such as dashboards, forecasting, or reporting.  
+    By keeping this layer separate, downstream applications can query clean, business-friendly tables without worrying about raw or intermediate transformations.
 
 ## File Viewing
 
+```bash
 DuckDB UI
 duckdb -ui
+```
 
-## Pollutant codes
+## Data Sources
 
-https://www.eionet.europa.eu/aqportal/doc/IPR%20guidance_2.0.1_final.pdf
-Micrograms per cubic meter
-https://eeadmz1-downloads-webapp.azurewebsites.net/
-European Environment Agency
+- **Air Quality Data:**  
+  Sourced from the **European Environment Agency (EEA)** via the [EEA Data Download Portal](https://eeadmz1-downloads-webapp.azurewebsites.net/).  
+  Measurements are reported in micrograms per cubic meter (µg/m³).  
 
-Primary Validated Data for pollutant 6001, i.e. PM2.5
+- **Weather Data:**  
+  Real-time and forecast weather variables retrieved from the [Open-Meteo API](https://open-meteo.com/).  
 
-## Meteorogical Data
+- **Historic Climate Data:**  
+  Provided by [CLIMPACT](https://data.climpact.gr/en/dataset/497dc26d-45e0-4ad5-b8f3-5f8890f65129), the Greek National Research Network for Climate Change and Its Effects.  
 
-Weather predictions API: https://open-meteo.com/
-
-Historic data sourced from: [CLIMPACT](
-https://data.climpact.gr/en/dataset/497dc26d-45e0-4ad5-b8f3-5f8890f65129)
-
-The "National Research Network for Climate Change and Its Effects - CLIMPACT" is an interdisciplinary consortium comprising of 28 members from the academic and research communities in Greece and Cyprus. This consortium is dedicated to addressing issues related to Climate Change (CC) and the associated climate risks, natural disasters, as well as social and economic impacts.
-
-https://ecmwf-projects.github.io/copernicus-training-cams/proc-aq-index.html
+- **Air Quality Index Reference:**  
+  Methodological reference from the [Copernicus Atmosphere Monitoring Service (CAMS)](https://ecmwf-projects.github.io/copernicus-training-cams/proc-aq-index.html).
 
 ## Streamlit
+
+The Streamlit app was used to create an interactive dashboard for exploring the data, connecting directly to the local DuckDB database.
+
 
