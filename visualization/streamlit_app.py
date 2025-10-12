@@ -313,9 +313,6 @@ st.subheader("Individual pollutant forecasts")
 
 if selected:
     cols = st.columns(len(selected), gap="large")
-    for col, pollutant in zip(cols, selected):
-        with col:
-            st.write(f"Displaying: {pollutant}")
 else:
     st.warning("Please select at least one pollutant to display.")
 for i, pollutant in enumerate(selected):
