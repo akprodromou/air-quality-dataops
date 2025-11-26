@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 import datetime
+import math
 from components import create_table_with_ring, create_pm_particles_diagram, generate_bin_circles, get_color
 from utils import load_forecast_csv, load_forecast_from_duckdb, get_bin_color, get_bin_index, get_verbal_status
 from config import (
@@ -14,9 +15,8 @@ from config import (
 from components import load_css
 
 
-# ---------------------
 # Config / Paths
-# ---------------------
+
 st.set_page_config(page_title="AQ Forecast Pipeline - Thessaloniki", layout="centered")
 
 load_css('visualization/styles.css')
@@ -30,9 +30,8 @@ corr_subset = pd.read_csv("data/forecasts/correlation_matrix.csv", index_col=0)
 df_metrics = pd.read_csv("data/forecasts/model_metrics.csv")
 
 
-# ---------------------
+
 # Plots
-# ---------------------
 
 # Current Reading
 
@@ -141,9 +140,7 @@ st.caption("""
 Hourly values (source: European Environment Agency - Air Quality Download Service API)
 """)
 
-# ---------------------
 # Forecast
-# ---------------------
 
 forecast_df = load_forecast_csv(FORECAST_CSV)
 if forecast_df is None:
@@ -158,9 +155,8 @@ if forecast_df is None:
     )
     st.stop()
 
-# ---------------------
+
 # Sidebar controls
-# ---------------------
 
 st.sidebar.header("Controls")
 
@@ -263,11 +259,10 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ---------------------
-# Filter data
-# ---------------------
 
-# --- Data Filtering and Preparation ---
+# Filter data
+
+# Data Filtering and Preparation
 # Filter by date range
 mask = (forecast_df["forecast_day"].dt.date >= start_date) & (
     forecast_df["forecast_day"].dt.date <= end_date
@@ -312,64 +307,99 @@ st.caption("Daily Average Values (predicted)")
 st.subheader("Individual pollutant forecasts")
 
 if selected:
-    cols = st.columns(len(selected), gap="large")
+    chart_index = 0
+    charts_per_row = 2
+    num_rows = math.ceil(len(selected) / charts_per_row)
+    df_filtered['date_label'] = pd.to_datetime(df_filtered['forecast_day']).dt.strftime('%d/%m')
 else:
     st.warning("Please select at least one pollutant to display.")
-for i, pollutant in enumerate(selected):
-    with cols[i]:
-        # Choose correct limits
-        limits = LIMIT_DICT.get(pollutant)
-        if limits is None:
-            st.warning(
-                f"No AQI limits defined for {pollutant}. Using default grey bars."
+for row in range(num_rows):
+    # Create columns for this row
+    cols = st.columns(charts_per_row)
+    
+    # Fill the columns in this row
+    for col_idx in range(charts_per_row):
+        if chart_index >= len(selected):
+            break  # No more charts to display
+            
+        pollutant = selected[chart_index]
+        
+        with cols[col_idx]:
+            # Choose correct limits
+            limits = LIMIT_DICT.get(pollutant)
+            if limits is None:
+                st.warning(
+                    f"No AQI limits defined for {pollutant}. Using default grey bars."
+                )
+                bar_colors = ["#999999"] * len(df_filtered)
+                lower_limit = None
+            else:
+                bar_colors = [
+                    get_color(v, limits) if pd.notna(v) else "#d3d3d3"
+                    for v in df_filtered[pollutant]
+                ]
+                lower_limit = limits[1] if len(limits) > 1 else None
+
+            fig_p = px.bar(
+                df_filtered,
+                x="date_label",
+                y=pollutant,
+                labels={pollutant: "µg/m³"},
+                color=bar_colors,
+                color_discrete_map="identity",
+                height=250,
             )
-            bar_colors = ["#999999"] * len(df_filtered)
-        else:
-            bar_colors = [
-                get_color(v, limits) if pd.notna(v) else "#d3d3d3"
-                for v in df_filtered[pollutant]
-            ]
 
-        fig_p = px.bar(
-            df_filtered,
-            x="forecast_day",
-            y=pollutant,
-            labels={pollutant: "µg/m³"},
-            color=bar_colors,  
-            color_discrete_map="identity",
-            height=200,
-        )
+            # Add red dashed line for lower limit
+            if lower_limit is not None:
+                fig_p.add_hline(
+                    y=lower_limit,
+                    line_dash="dash",
+                    line_color="#ba8875",
+                    line_width=2
+                )
 
-        # Format y-axis to 1 decimal
-        fig_p.update_yaxes(tickformat=".1f")
+            # Format y-axis to 1 decimal
+            fig_p.update_yaxes(tickformat=".1f")
 
-        fig_p.update_layout(
-            title_text=pollutant.replace("_value", "").upper(),
-            xaxis_title=None,
-            yaxis_title=None,
-            showlegend=False,
-            bargap=0.2,
-            yaxis=dict(
-                ticklabelstandoff=-5
-            ),
-        )
+            fig_p.update_layout(
+                title_text=pollutant.replace("_value", "").upper(),
+                xaxis_title=None,
+                yaxis_title=None,
+                showlegend=False,
+                bargap=0.7,
+                yaxis=dict(
+                    ticklabelstandoff=-5
+                ),
+                xaxis=dict(
+                    # show all ticks
+                    tickmode='linear',
+                    # one tick per data point
+                    dtick=1
+                )
+            )
 
-        fig_p.update_traces(
-            hovertemplate="Day: %{x}<br>" + pollutant.replace("_value", "").upper() + ": %{y:.1f} µg/m³<extra></extra>",
-            marker=dict(
-                cornerradius=5  
-            )            
-        )
+            fig_p.update_traces(
+                hovertemplate="Day: %{x}<br>" + pollutant.replace("_value", "").upper() + ": %{y:.1f} µg/m³<extra></extra>",
+                marker=dict(
+                    cornerradius=4
+                )
+            )
 
-        # Make y-axis start from 0
-        fig_p.update_yaxes(rangemode="tozero")
-        config = {'width': 'stretch'}
+            # Make y-axis start from 0
+            fig_p.update_yaxes(rangemode="tozero")
+            config = {'width': 'stretch'}
 
-        st.plotly_chart(fig_p, config=config)
+            st.plotly_chart(fig_p, config=config)
+        
+        chart_index += 1
 
-st.caption("""
-Bar colors for each pollutant correspond to the Pollutant index scaling provided on the sidebar on the left, e.g. 'Good', 'Very Good' etc.
-""")
+st.markdown("""
+<p style="line-height: 1.5; font-size: 0.688rem; color: rgba(145, 146, 149, 1); margin-bottom: 1rem;">
+Bar colors for each pollutant correspond to the Pollutant index scaling provided on the sidebar on the left, e.g. 'Good', 'Very Good' etc.<br>
+The dashed line corresponds to the threshold between the "Very Good" and "Good" levels for each pollutant.
+</p>
+""", unsafe_allow_html=True)
 
 # ---------------------
 # Download / Export
@@ -428,7 +458,7 @@ pollutants = pd.DataFrame({
 st.markdown(pollutants.to_html(index=False, classes='centered-table'), unsafe_allow_html=True)
 
 # Optional info note
-st.info("""        
+st.info("""
 EU limit values apply over different periods of time (daily, annual, or 8-hour) because the observed health impacts 
         associated with the various pollutants occur over different exposure times. 
 """)
@@ -574,8 +604,8 @@ st.markdown("""
 """)
 st.subheader("3.3. Data Cleaning & Validation")
 st.markdown("""
-   - Outliers and invalid readings were replaced with NaN and removed post-merge.  
-   - Multicollinearity was examined using **Variance Inflation Factor (VIF)** to ensure model stability.  
+    - Outliers and invalid readings were replaced with NaN and removed post-merge.  
+    - Multicollinearity was examined using **Variance Inflation Factor (VIF)** to ensure model stability.  
 """)
 st.subheader("3.4. Data Exploration")
 st.markdown("""
@@ -597,7 +627,7 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True) 
 
-st.markdown("""            
+st.markdown("""
     - Bivariate Correlation Analysis: The strongest correlations were found between each pollutant’s *current and previous-day values* 
             (O₃: 0.88, SO₂: 0.85, PM₂.₅: 0.78, PM₁₀: 0.70), indicating **temporal autocorrelation**, i.e. pollutant values in a time series are correlated with their own past values.
         - Temperature showed a moderate positive correlation with **O₃** (0.38), consistent with photochemical lower ground ozone formation on warmer days.
@@ -615,7 +645,7 @@ y_columns = [col for col in df_monthly.columns if col in COLUMN_MAPPING.values()
 
 fig = px.line(
     df_monthly,
-    x='month',          
+    x='month',
     y=y_columns,
     title='Yearly Mean Pollutant Concentration (µg/m³)',
     labels={'value': 'Concentration (µg/m³)', 'variable': 'Pollutant', 'month': 'Month'}

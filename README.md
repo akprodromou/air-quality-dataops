@@ -133,7 +133,7 @@ Make sure data shape is as expected (e.g., correct keys in JSON).
 
 2. DBT Model Sanity
 
-Navigate to your DBT project:
+Navigate to the DBT project:
 
 ```bash
 cd transformation/aq_weather_dbt

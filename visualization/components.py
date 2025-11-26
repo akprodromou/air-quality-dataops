@@ -73,7 +73,7 @@ def generate_bin_circles(parameter, value):
         # add blink-circle class only for the active circle
         cls = "blink-circle" if i == bin_idx else ""
         circles.append(
-            f'<span class="{cls}" style="display:inline-block;width:12px;height:12px;border-radius:50%;margin:1px;background-color:{color}"></span>'
+            f'<span class="{cls}" style="display:inline-block;width:11px;height:11px;border-radius:50%;margin:1px;background-color:{color}"></span>'
         )
     return "".join(circles)
 
