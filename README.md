@@ -200,6 +200,6 @@ duckdb -ui
 
 ## Streamlit
 
-The Streamlit app was used to create an interactive dashboard for exploring the data, connecting directly to the local DuckDB database.
+The Streamlit app was used to create an interactive dashboard for exploring the data, connecting directly to the local DuckDB database. You can access it here: https://air-quality-thessaloniki.streamlit.app/
 
 
