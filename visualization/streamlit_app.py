@@ -634,11 +634,14 @@ fig.update_layout(
     xaxis_title="Targets",
     yaxis_title="Predictors",
     coloraxis_colorbar=dict(
-        title="Correlation",
+        title=dict(
+            text="Correlation",
+            side="top"
+        ),
         orientation="h",
         tickmode="array",
-        tickvals=[-1, -0.5, 0, 0.5, 1],
-        x=0,
+        tickvals=[-1, 0, 1],
+        x=0.5,
         xanchor="center",
         y=-0.25,
         yanchor="top",
