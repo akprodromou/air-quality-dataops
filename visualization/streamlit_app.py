@@ -39,16 +39,17 @@ st.title("Air Quality Monitoring - Thessaloniki")
 
 st.header("Overview")
 st.markdown("""
-This project is part of an end-to-end **Air Quality DataOps pipeline** for Thessaloniki, Greece. It automates the **collection, 
+This project is part of an end-to-end **Air Quality DataOps pipeline** for Thessaloniki, Greece. It automates the **collection,
 transformation, and prediction** of pollutant concentrations using open data from the **European Environment Agency, the CLIMPACT initiative,
 OpenAQ and Open-Meteo APIs**, with the aim of demonstrating a pipeline for monitoring pollution dynamics and assessing air quality trends in cities.
 
-Key components include:
-- **Data Ingestion**: Retrieval of latest pollutant data readings (NO₂, PM₁₀, PM₂.₅, O₃, CO) from OpenAQ.
-- **Data Transformation (dbt + DuckDB)**: Cleaning, standardizing, and structuring data for analysis.
-- **Predictive modelling**: A Random Forest model trained on historical air quality (EEA) and weather data (CLIMPACT) is used to forecast air quality for the next 7 days, 
-            based on the respective Open Meteo weather predictions.
-- **Visualization**: Summarizes current readings and daily pollutant forecasts for the following week, while informing users on health risk levels and pollutant information.
+It follows a 4-step process:
+1. **Data Ingestion**: Latest pollutant data readings (NO₂, PM₁₀, PM₂.₅, O₃, CO) are retrieved from OpenAQ.
+2. **Data Transformation (dbt + DuckDB)**: The data is cleaned, standardized and structured for analysis.
+3. **Predictive modelling**: A Random Forest model trained on historical air quality (EEA) and weather data (CLIMPACT) is used to
+    forecast air quality for the next 7 days, based on the respective Open Meteo weather predictions.
+4. **Visualization**: Current readings and daily pollutant forecasts for the following week are presented to the users,
+    providing pollutant information and associated health risk levels.
 """)
 
 ## Load the tables
@@ -522,12 +523,14 @@ st.header("2. Methodology")
 
 
 st.markdown("""
-The project follows a modular **data operations (DataOps)** architecture designed to ensure **daily automation**, **traceability**, and **scalability** across multiple data sources.  
-The pipeline integrates raw air quality and meteorological data, transforms them into structured analytical tables, and prepares them for the predictive model and dashboard visualization.
+The project follows a modular **data operations (DataOps)** architecture designed to ensure **daily automation**, 
+            **traceability**, and **scalability** across multiple data sources. The pipeline integrates raw air quality 
+            and meteorological data, transforms them into structured analytical tables, and prepares them for the 
+            predictive model and dashboard visualization.
 """)
 st.subheader("2.1. Data Ingestion")
 st.markdown("""
-Two external APIs are queried daily through an **Airflow DAG**:
+Two external APIs are queried daily through an **Airflow Directed Acyclic Graph (DAG)**:
 
 - **OpenAQ API:** retrieves near real-time pollutant concentrations (PM₂.₅, PM₁₀, NO₂, O₃, SO₂).  
 - **Open-Meteo API:** provides weather data (temperature, humidity, wind speed, precipitation, wind direction).  
@@ -560,7 +563,7 @@ st.markdown("""
 The **Random Forest forecast script** consumes the cleaned data from the marts tables and the most recent air quality readings for each station.  
 After predictions are generated, the results are passed to the **Streamlit application**, which visualizes both the **latest observed values** and the **7-day forecast** for each pollutant.
 
-The resulting pipeline ensures an **end-to-end automated workflow** — from raw data acquisition to interpretable insights.
+The resulting pipeline ensures an automated workflow, from raw data acquisition to presenting the information through visuals.
 """)
 
 st.markdown("The data processing and forecasting architecture flow chart is provided below:")
@@ -587,25 +590,28 @@ st.markdown("""
 st.header("3. Predictive Modeling")
 
 st.markdown("""
-The predictive component of this project was developed through a structured regression workflow combining **meteorological** and **air quality data** for Thessaloniki (2023).
+Predictions in this project were made using a machine learning model trained on importing past meteorological and 
+            air quality data for Thessaloniki (2023).
 """)
 st.subheader("3.1. Data Integration")
 st.markdown("""
-   - Historical **air quality data** (PM₂.₅, PM₁₀, NO₂, O₃, SO₂) were retrieved from the European Environment Agency.  
-   - Corresponding **meteorological variables** (temperature, humidity, wind speed, rainfall, wind direction) were imported from the CLIMPACT and Open-Meteo datasets.  
-   - Both datasets were harmonized on a **daily timescale** and merged by date.  
+    - Historical air quality data (PM₂.₅, PM₁₀, NO₂, O₃, SO₂) were retrieved from the European Environment Agency.
+    - Corresponding meteorological variables (temperature, humidity, wind speed, rainfall, wind direction) were
+            imported from the CLIMPACT and Open-Meteo datasets.
+    - Both datasets were harmonized on a daily timescale and merged by date.
 """)
 st.subheader("3.2. Feature Engineering")
 st.markdown("""
-   - Pollutant values were aggregated from **hourly to daily means**.  
-   - A **month variable** was added to capture **seasonal effects**.  
-   - **Temporal autocorrelation** was modeled by including each pollutant’s previous-day mean as a new predictor (e.g., `pm25_value_prev`).  
-   - **Wind direction** was converted from compass points to numerical degrees.  
+    - Pollutant values were aggregated from **hourly to daily means**.
+    - A month variable was added to capture seasonal effects.
+    - **Temporal autocorrelation** was modeled by including each pollutant’s previous-day mean as a
+            new predictor (e.g., `pm25_value_prev`).
+    - **Wind direction** was converted from compass points to numerical degrees.
 """)
 st.subheader("3.3. Data Cleaning & Validation")
 st.markdown("""
-    - Outliers and invalid readings were replaced with NaN and removed post-merge.  
-    - Multicollinearity was examined using **Variance Inflation Factor (VIF)** to ensure model stability.  
+    - Outliers and invalid readings were replaced with NaN and removed post-merge.
+    - Multicollinearity was examined using **Variance Inflation Factor (VIF)** to ensure model stability.
 """)
 st.subheader("3.4. Data Exploration")
 st.markdown("""
@@ -614,18 +620,33 @@ st.markdown("""
 
 fig = px.imshow(
     corr_subset,
-    text_auto=".2f",        
+    text_auto=".2f",
     color_continuous_scale="RdBu_r",
     aspect="auto",
+    zmin=-1,
+    zmax=1
 )
 
 fig.update_layout(
     title="Correlation Heatmap",
     xaxis_title="Targets",
-    yaxis_title="Predictors"
+    yaxis_title="Predictors",
+    coloraxis_colorbar=dict(
+        title="Correlation",
+        orientation="h",
+        tickmode="array",
+        tickvals=[-1, -0.5, 0, 0.5, 1],
+        x=0,
+        xanchor="center",
+        y=-0.25,
+        yanchor="top",
+        len=0.45,
+        thickness=12
+    )
 )
 
-st.plotly_chart(fig, use_container_width=True) 
+st.plotly_chart(fig, use_container_width=True)
+
 
 st.markdown("""
     - Bivariate Correlation Analysis: The strongest correlations were found between each pollutant’s *current and previous-day values* 

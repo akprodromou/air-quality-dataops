@@ -3,11 +3,11 @@ import pandas as pd
 import duckdb
 import joblib
 
-rf_model = joblib.load("AQ_predictive_modeling_files/random_forest_air_quality.pkl")
-predictors_final = joblib.load("AQ_predictive_modeling_files/rf_feature_columns.pkl")
+rf_model = joblib.load("../../AQ_predictive_modeling_files/random_forest_air_quality.pkl")
+predictors_final = joblib.load("../../AQ_predictive_modeling_files/rf_feature_columns.pkl")
 
 # Base path (rf_forecast.py is in AQ_predictive_modeling_files/)
-base_dir = Path(__file__).parent.parent  
+base_dir = Path(__file__).parent.parent
 
 # Path to DuckDB file
 db_path = base_dir / "data/air_quality_weather.duckdb"

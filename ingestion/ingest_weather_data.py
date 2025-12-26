@@ -24,9 +24,9 @@ load_dotenv()
 CITY_LAT = os.getenv("CITY_LAT")
 CITY_LON = os.getenv("CITY_LON")
 CITY_NAME = os.getenv("CITY_NAME")
-# Forecast horizon (days). Our aim is to make PM2.5 predictions for 7 days, 
+# Forecast horizon (days). Our aim is to make PM2.5 predictions for 7 days,
 # hence the respective weather data needed
-WEATHER_FORECAST_DAYS = int(os.getenv("WEATHER_FORECAST_DAYS", "7"))  
+WEATHER_FORECAST_DAYS = int(os.getenv("WEATHER_FORECAST_DAYS", "7"))
 WEATHER_TIMEZONE = os.getenv("OPENMETEO_TIMEZONE", "Europe/Moscow")
 
 API_URL = "https://api.open-meteo.com/v1/forecast"

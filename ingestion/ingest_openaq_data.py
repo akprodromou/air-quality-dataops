@@ -8,6 +8,7 @@ import json
 import os
 from datetime import datetime, timedelta, date
 # Import for environment variables
+# Correct Code
 from dotenv import load_dotenv
 from openaq import OpenAQ
 
@@ -47,7 +48,7 @@ def get_station_id(city_lat: int, city_lon: int) -> int | None:
     try:
         params = {
             "coordinates": f"{city_lat},{city_lon}",
-            "radius": 1000, 
+            "radius": 1000,
             "limit": 1000
         }
         response = requests.get(OPENAQ_LOCATIONS_API_URL, params=params, headers=headers)
@@ -157,5 +158,3 @@ if __name__ == "__main__":
         else:
             print(f"Could not find an AQ monitoring station for {CITY_LAT, CITY_LON}. No data fetched.")
 
-
- 

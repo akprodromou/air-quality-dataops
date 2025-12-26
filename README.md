@@ -19,26 +19,26 @@ AIR-QUALITY-DATA.../
 ## Features
 
 ### Data Ingestion
-- Fetches air quality measurements from the OpenAQ API and weather data from external sources.  
-- Saves raw JSON files locally in `data/ingestion/raw_data/`.  
+- Fetches air quality measurements from the OpenAQ API and weather data from external sources.
+- Saves raw JSON files locally in `data/ingestion/raw_data/`.
 
 ### Data Storage & Transformation
-- Stores ingested data in DuckDB.  
-- Transforms raw JSON into structured tables (`ingested_openaq_data`, `stg_openaq_data`).  
-- DBT models handle staging, intermediate tables, and final data marts.  
+- Stores ingested data in DuckDB.
+- Transforms raw JSON into structured tables (`ingested_openaq_data`, `stg_openaq_data`).
+- DBT models handle staging, intermediate tables, and final data marts.
 
 ### Data Orchestration
-- Airflow DAG (`AIR_quality_pipeline.py`) automates ingestion, transformation, and storage.  
-- Scheduled to run daily (`@daily`) with logging of process outcomes.  
+- Airflow DAG (`AIR_quality_pipeline.py`) automates ingestion, transformation, and storage.
+- Scheduled to run daily (`@daily`) with logging of process outcomes.
 
 ### Predictive Modeling
-- Random Forest model predicts future pollutant concentrations.  
-- Model artifacts stored in `AQ_predictive_modeling_files/`.  
-- Forecasts can be generated programmatically via `rf_forecast.py`.  
+- Random Forest model predicts future pollutant concentrations.
+- Model artifacts stored in `AQ_predictive_modeling_files/`.
+- Forecasts can be generated programmatically via `rf_forecast.py`.
 
 ### Data Visualization
-- Interactive Streamlit app (`streamlit_app.py`) reads from DuckDB and displays dynamic charts.  
-- Visualizations include pollutant time series, historical trends, and forecasted air quality levels.  
+- Interactive Streamlit app (`streamlit_app.py`) reads from DuckDB and displays dynamic charts.
+- Visualizations include pollutant time series, historical trends, and forecasted air quality levels.
 
 ## Requirements
 
@@ -52,86 +52,39 @@ AIR-QUALITY-DATA.../
 - joblib
 - DBT (e.g., dbt-core, dbt-duckdb)
 - Airflow (if running DAGs in Docker)
-- Docker 
+- Docker
 - python-dotenv (for environment variables)
 
-Install Python dependencies via:
+## Usage & Pre-Deployment Instructions to run locally
+
+### 0. Activate Python Environment
+
+Install Python dependencies. For example, if venv is a virtual env:
 
 ```bash
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Usage
+### 1. Run Data Ingestion
 
-### Run Data Ingestion
-```bash
-python ingestion/ingest_openaq_data.py
-python ingestion/ingest_weather_data.py
-```
-This fetches the latest air quality data and saves JSON files in `ingestion/raw_data/`.
-
-### Populate DuckDB
-```bash
-python ingestion/ingest_openaq_data.py
-```
-Reads all raw JSON files (air quality and weather) and populates the `ingested_openaq_data` and `stg_openaq_data` tables in `data/air_quality.duckdb`.
-Can be run manually or as part of the Airflow pipeline.
-
-### Run Predictive Model
-```bash
-python AQ_predictive_modeling_files/rf_forecast.py
-```
-Generates forecasts for future pollutant concentrations using the Random Forest model.
-Model parameters are stored in AQ_predictive_modeling_files/.
-
-### Visualize Data
-```bash
-streamlit run visualization/streamlit_app.py
-```
-Launches the interactive Streamlit app.
-
-Explore pollutant trends, historical data, and forecasted air quality levels..
-
-### Run Airflow DAG
-```bash
-docker-compose up -d
-```
-- Starts Airflow (webserver + scheduler) and runs the air_quality_pipeline DAG according to its schedule (@daily).
-- Access the Airflow web UI at [http://localhost:8081](http://localhost:8081).
-
-## Notes
-
-- The project currently fetches data from the "Agia Sofia" station in Thessaloniki.
-- The pollutants tracked are NO2, O3, PM10, PM2.5, and SO2 (units: µg/m³).
-
-
-# Pre-Deployment Checklist for Airflow DAGs with DBT
-
-To run tests locally, first export paths:
-```bash
-export RAW_DATA_PATH_AIR_QUALITY=/Users/anton/Desktop/air-quality-dataops/ingestion/raw_data/air_quality
-export RAW_DATA_PATH_WEATHER=/Users/anton/Desktop/air-quality-dataops/ingestion/raw_data/weather
-export DUCKDB_PATH=/Users/anton/Desktop/air-quality-dataops/data/air_quality_weather.duckdb
-```
-
-1. Python Script Sanity
-
-Run ingestion scripts locally to verify data fetching and file writing:
+Fetch the latest data from OpenAQ and Open-Meteo:
 
 ```bash
 python ingestion/ingest_openaq_data.py
 python ingestion/ingest_weather_data.py
 ```
 
-Check that raw JSON/CSV files exist in:
+JSON files will be saved in:
 
-```bash
+```text
 ingestion/raw_data/air_quality/
 ingestion/raw_data/weather/
 ```
-Make sure data shape is as expected (e.g., correct keys in JSON).
 
-2. DBT Model Sanity
+Verify the data keys and content to ensure ingestion worked.
+
+### 2. Populate DuckDB via DBT
 
 Navigate to the DBT project:
 
@@ -139,29 +92,75 @@ Navigate to the DBT project:
 cd transformation/aq_weather_dbt
 ```
 
-Check configuration and connection:
+Set environment variables for raw data and DuckDB file:
 
 ```bash
-dbt debug --profiles-dir .
+export RAW_DATA_PATH_AIR_QUALITY=../../ingestion/raw_data/air_quality
+export RAW_DATA_PATH_WEATHER=../../ingestion/raw_data/weather
+export DUCKDB_PATH=./data/air_quality_weather.duckdb
+```
+
+Verify DBT configuration:
+
+```bash
+dbt debug --project-dir . --profiles-dir .
 ```
 
 Run all staging and analysis models:
 
 ```bash
-dbt run --models stg_ingested_openaq_data stg_openaq_data analysis_air_quality \
-          stg_ingested_weather_data stg_weather_data analysis_weather
+dbt run --project-dir . --profiles-dir .
 ```
 
 Run tests:
 
 ```bash
-dbt test
+dbt test --project-dir . --profiles-dir .
 ```
-This will catch:
 
-- Misconfigured profiles or database connections
-- SQL compilation/run errors
-- Failed column tests (nulls, accepted values, unique constraints)
+This will check:
+- Profiles & database connections
+- SQL compilation and execution
+- Column-level constraints (nulls, accepted values, unique constraints)
+
+### 3. Run Predictive Model
+
+Generate future pollutant forecasts using the Random Forest model:
+
+```bash
+python ../../AQ_predictive_modeling_files/rf_forecast.py
+```
+
+Model parameters are stored in `AQ_predictive_modeling_files/`.
+Check the output for forecasted pollutant concentrations.
+
+### 5. Visualize Data
+
+Launch the Streamlit app:
+
+```bash
+cd ../..
+streamlit run visualization/streamlit_app.py
+```
+
+## Run via Airflow DAG
+
+Instead of running ingestion, DBT, predictive modeling, and visualization manually, you can launch the full pipeline using Docker and Airflow:
+
+### Open Docker
+Run the Docker app on your machine. Then start Airflow services and run the DAG:
+
+```bash
+docker-compose up -d
+```
+
+- Access the web UI at http://localhost:8081
+- DAG `air_quality_pipeline` runs automatically on a daily schedule.
+
+## Notes
+
+- **Current station:** "Agia Sofia", Thessaloniki
+- **Pollutants tracked:** NO2, O3, PM10, PM2.5, SO2 (µg/m³)
 
 ## Model layers explained
 

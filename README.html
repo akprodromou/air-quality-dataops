@@ -2,12 +2,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.24">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<!-- This is the Quarto Readme file -->
- 
+
 <title>readme</title>
 <style>
 code{white-space: pre-wrap;}
@@ -67,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="README_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="README_files/libs/quarto-html/anchor.min.js"></script>
 <link href="README_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="README_files/libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="README_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="README_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="README_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="README_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -89,58 +88,56 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This project demonstrates a simple DataOps workflow for collecting, storing, and visualizing air quality data from the OpenAQ API for Thessaloniki, Greece. It uses Python, DuckDB, and Airflow for orchestration, and Plotly for visualization.</p>
 <section id="project-structure" class="level2">
 <h2 class="anchored" data-anchor-id="project-structure">Project Structure</h2>
-<pre><code>.
-├── .env
-├── .venv
-├── dags_data
-├── data
-│   ├── air_quality.duckdb
-│   ├── data_ingestion
-│   │   └── raw_data
-│   │       └── ingest_openaq_data.py
-│   └── data_transformation
-│       └── air_quality_dbt
-├── logs
-├── orchestration
-│   ├── air_quality_pipeline.py
-│   └── example_dag.py
-├── docker-compose.yml
-├── Dockerfile
-├── explore_duckdb.py
-├── visualizations
-│   └── visualize_air_quality.py
-│   └── air_quality_plot.png
-├── README.md
-└── requirements.txt</code></pre>
+<pre><code>AIR-QUALITY-DATA.../
+├── data/                           # Raw, historic, and forecast data
+├── ingestion/                      # Scripts to collect OpenAQ &amp; weather data
+├── transformation/                 # DBT models and ETL logic
+├── AQ_predictive_modeling_files/   # Random Forest model &amp; forecasting scripts
+├── visualization/                  # Streamlit app, plotting, and styling
+├── orchestration/                  # Pipeline orchestration scripts
+└── logs/                           # Logs for ingestion, transformation, and model runs
+</code></pre>
 </section>
 <section id="features" class="level2">
 <h2 class="anchored" data-anchor-id="features">Features</h2>
 <section id="data-ingestion" class="level3">
 <h3 class="anchored" data-anchor-id="data-ingestion">Data Ingestion</h3>
 <ul>
-<li>Fetches air quality measurements from the OpenAQ API.</li>
-<li>Saves raw JSON files locally in <code>data/data_ingestion/raw_data/</code>.</li>
+<li>Fetches air quality measurements from the OpenAQ API and weather data from external sources.<br>
+</li>
+<li>Saves raw JSON files locally in <code>data/ingestion/raw_data/</code>.</li>
 </ul>
 </section>
-<section id="data-storage" class="level3">
-<h3 class="anchored" data-anchor-id="data-storage">Data Storage</h3>
+<section id="data-storage-transformation" class="level3">
+<h3 class="anchored" data-anchor-id="data-storage-transformation">Data Storage &amp; Transformation</h3>
 <ul>
-<li>Stores ingested JSON data in DuckDB.</li>
-<li>Converts JSON to structured tables: <code>ingested_openaq_data</code> and <code>stg_openaq_data</code>.</li>
+<li>Stores ingested data in DuckDB.<br>
+</li>
+<li>Transforms raw JSON into structured tables (<code>ingested_openaq_data</code>, <code>stg_openaq_data</code>).<br>
+</li>
+<li>DBT models handle staging, intermediate tables, and final data marts.</li>
 </ul>
 </section>
 <section id="data-orchestration" class="level3">
 <h3 class="anchored" data-anchor-id="data-orchestration">Data Orchestration</h3>
 <ul>
-<li>Airflow DAG (<code>air_quality_pipeline.py</code>) automates ingestion and transformation.</li>
-<li>Schedule defined as daily (<code>@daily</code>) in Airflow.</li>
+<li>Airflow DAG (<code>AIR_quality_pipeline.py</code>) automates ingestion, transformation, and storage.</li>
+<li>Scheduled to run daily (<code>@daily</code>) with logging of process outcomes.</li>
+</ul>
+</section>
+<section id="predictive-modeling" class="level3">
+<h3 class="anchored" data-anchor-id="predictive-modeling">Predictive Modeling</h3>
+<ul>
+<li>Random Forest model predicts future pollutant concentrations.</li>
+<li>Model artifacts stored in <code>AQ_predictive_modeling_files/</code>.</li>
+<li>Forecasts can be generated programmatically via <code>rf_forecast.py</code>.</li>
 </ul>
 </section>
 <section id="data-visualization" class="level3">
 <h3 class="anchored" data-anchor-id="data-visualization">Data Visualization</h3>
 <ul>
-<li><code>visualize_air_quality.py</code> reads from DuckDB and creates charts using Plotly.</li>
-<li>Visualizations include time series of pollutants (CO, NO2, O3, PM10, PM2.5, SO2).</li>
+<li>Interactive Streamlit app (<code>streamlit_app.py</code>) reads from DuckDB and displays dynamic charts.</li>
+<li>Visualizations include pollutant time series, historical trends, and forecasted air quality levels.</li>
 </ul>
 </section>
 </section>
@@ -152,8 +149,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Pandas</li>
 <li>Plotly</li>
 <li>Requests</li>
+<li>Streamlit</li>
+<li>scikit-learn</li>
+<li>joblib</li>
+<li>DBT (e.g., dbt-core, dbt-duckdb)</li>
 <li>Airflow (if running DAGs in Docker)</li>
-<li>Docker &amp; Docker Compose (for local orchestration)</li>
+<li>Docker</li>
+<li>python-dotenv (for environment variables)</li>
 </ul>
 <p>Install Python dependencies via:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-r</span> requirements.txt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -162,24 +164,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="usage">Usage</h2>
 <section id="run-data-ingestion" class="level3">
 <h3 class="anchored" data-anchor-id="run-data-ingestion">Run Data Ingestion</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> data/data_ingestion/raw_data/ingest_openaq_data.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This fetches the latest air quality data and saves JSON files in <code>data/data_ingestion/raw_data/</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> ingestion/ingest_openaq_data.py</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> ingestion/ingest_weather_data.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This fetches the latest air quality data and saves JSON files in <code>ingestion/raw_data/</code>.</p>
 </section>
 <section id="populate-duckdb" class="level3">
 <h3 class="anchored" data-anchor-id="populate-duckdb">Populate DuckDB</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> explore_duckdb.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This reads all raw JSON files and populates the <code>stg_openaq_data</code> table in <code>data/air_quality.duckdb</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> ingestion/ingest_openaq_data.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Reads all raw JSON files (air quality and weather) and populates the <code>ingested_openaq_data</code> and <code>stg_openaq_data</code> tables in <code>data/air_quality.duckdb</code>. Can be run manually or as part of the Airflow pipeline.</p>
+</section>
+<section id="run-predictive-model" class="level3">
+<h3 class="anchored" data-anchor-id="run-predictive-model">Run Predictive Model</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> AQ_predictive_modeling_files/rf_forecast.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Generates forecasts for future pollutant concentrations using the Random Forest model. Model parameters are stored in AQ_predictive_modeling_files/.</p>
 </section>
 <section id="visualize-data" class="level3">
 <h3 class="anchored" data-anchor-id="visualize-data">Visualize Data</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> visualizations/visualize_air_quality.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Generates interactive charts for pollutants over time.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">streamlit</span> run visualization/streamlit_app.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Launches the interactive Streamlit app.</p>
+<p>Explore pollutant trends, historical data, and forecasted air quality levels..</p>
 </section>
-<section id="optional-run-airflow-dag" class="level3">
-<h3 class="anchored" data-anchor-id="optional-run-airflow-dag">Optional: Run Airflow DAG</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker-compose</span> up <span class="at">-d</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="run-airflow-dag" class="level3">
+<h3 class="anchored" data-anchor-id="run-airflow-dag">Run Airflow DAG</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker-compose</span> up <span class="at">-d</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
-<li>Airflow will run the <code>air_quality_pipeline</code> DAG according to the schedule (<code>@daily</code>).</li>
+<li>Starts Airflow (webserver + scheduler) and runs the air_quality_pipeline DAG according to its schedule (<span class="citation" data-cites="daily">@daily</span>).</li>
 <li>Access the Airflow web UI at <a href="http://localhost:8081">http://localhost:8081</a>.</li>
 </ul>
 </section>
@@ -188,62 +197,82 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="notes">Notes</h2>
 <ul>
 <li>The project currently fetches data from the “Agia Sofia” station in Thessaloniki.</li>
-<li>The pollutants tracked are CO, NO2, O3, PM10, PM2.5, and SO2 (units: µg/m³).</li>
-<li>For portfolio purposes, the project runs locally or via Docker; no cloud deployment is required.</li>
+<li>The pollutants tracked are NO2, O3, PM10, PM2.5, and SO2 (units: µg/m³).</li>
 </ul>
-<!-- We use dbt models to transform the raw JSON data into staging tables (stg_ingested_openaq_data, stg_openaq_data) before applying further transformations. -->
 </section>
 </section>
 <section id="pre-deployment-checklist-for-airflow-dags-with-dbt" class="level1">
 <h1>Pre-Deployment Checklist for Airflow DAGs with DBT</h1>
 <p>To run tests locally, first export paths:</p>
-<pre><code>export RAW_DATA_PATH_AIR_QUALITY=/Users/anton/Desktop/air-quality-dataops/ingestion/raw_data/air_quality
-export RAW_DATA_PATH_WEATHER=/Users/anton/Desktop/air-quality-dataops/ingestion/raw_data/weather
-export DUCKDB_PATH=/Users/anton/Desktop/air-quality-dataops/data/air_quality_weather.duckdb</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">RAW_DATA_PATH_AIR_QUALITY</span><span class="op">=</span>/Users/anton/Desktop/air-quality-dataops/ingestion/raw_data/air_quality</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">RAW_DATA_PATH_WEATHER</span><span class="op">=</span>/Users/anton/Desktop/air-quality-dataops/ingestion/raw_data/weather</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">DUCKDB_PATH</span><span class="op">=</span>/Users/anton/Desktop/air-quality-dataops/data/air_quality_weather.duckdb</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ol type="1">
 <li>Python Script Sanity</li>
 </ol>
 <p>Run ingestion scripts locally to verify data fetching and file writing:</p>
-<p>python ingestion/ingest_openaq_data.py python ingestion/ingest_weather_data.py</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> ingestion/ingest_openaq_data.py</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> ingestion/ingest_weather_data.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Check that raw JSON/CSV files exist in:</p>
-<p>ingestion/raw_data/air_quality/ ingestion/raw_data/weather/</p>
-<p>Ensure data shape is as expected (e.g., correct keys in JSON).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ingestion/raw_data/air_quality/</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ingestion/raw_data/weather/</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Make sure data shape is as expected (e.g., correct keys in JSON).</p>
 <ol start="2" type="1">
 <li>DBT Model Sanity</li>
 </ol>
-<p>Navigate to your DBT project:</p>
-<p>cd transformation/aq_weather_dbt</p>
+<p>Navigate to the DBT project:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> transformation/aq_weather_dbt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Check configuration and connection:</p>
-<p>dbt debug –profiles-dir .</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dbt</span> debug <span class="at">--profiles-dir</span> .</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Run all staging and analysis models:</p>
-<p>dbt run –models stg_ingested_openaq_data stg_openaq_data analysis_air_quality<br>
-stg_ingested_weather_data stg_weather_data analysis_weather</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dbt</span> run <span class="at">--models</span> stg_ingested_openaq_data stg_openaq_data analysis_air_quality <span class="dt">\</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>          stg_ingested_weather_data stg_weather_data analysis_weather</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Run tests:</p>
-<p>dbt test</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dbt</span> test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This will catch:</p>
 <ul>
-<li><p>Misconfigured profiles or database connections</p></li>
-<li><p>SQL compilation/run errors</p></li>
-<li><p>Failed column tests (nulls, accepted values, unique constraints)</p></li>
-<li><p>The stg_ingested_* models mirror the API schema. We don’t touch them except for flattening/renaming. That way, we can always debug against the original feed.</p></li>
-<li><p>The staging model (stg_openaq_data) is doing exactly what it should. This is where you remove obvious junk (null IDs, invalid country codes, etc.) and apply basic transformations</p></li>
-<li><p>Extracting and flattening nested JSON structures</p></li>
-<li><p>Renaming columns to business-friendly names</p></li>
-<li><p>Light filtering (specific parameters only)</p></li>
-<li><p>Standardizing data types</p></li>
-<li><p>Intermediate (sometimes called int_ or “core” models): this is the layer where you enforce data quality rules like deduplication, keeping the latest record, or normalizing across sources. It gives you predictable, clean tables for downstream marts.</p></li>
+<li>Misconfigured profiles or database connections</li>
+<li>SQL compilation/run errors</li>
+<li>Failed column tests (nulls, accepted values, unique constraints)</li>
 </ul>
+<section id="model-layers-explained" class="level2">
+<h2 class="anchored" data-anchor-id="model-layers-explained">Model layers explained</h2>
+<ul>
+<li>The <code>stg_ingested_*</code> models mirror the API schema. No transformation is applied on it, except for flattening. That way, we can always debug against the original feed.</li>
+<li>The staging model (<code>stg_openaq_data</code>) is where we remove obvious junk (null IDs, invalid country codes, etc.) and apply basic transformations:
+<ul>
+<li>Extracting and flattening nested JSON structures</li>
+<li>Renaming columns to business-friendly names</li>
+<li>Light filtering (specific parameters only)</li>
+<li>Standardizing data types</li>
+</ul></li>
+<li>Intermediate <code>int_openaq_deduped</code> is the layer where we enforce data quality rules like deduplication, keeping the latest record, or normalizing across sources. It gives us predictable, clean tables for downstream marts.</li>
+<li>Marts (<code>mrt_*</code>) the final, analytics-ready tables that aggregate, summarize, and structure data for specific use cases, such as dashboards, forecasting, or reporting.<br>
+By keeping this layer separate, downstream applications can query clean, business-friendly tables without worrying about raw or intermediate transformations.</li>
+</ul>
+</section>
 <section id="file-viewing" class="level2">
 <h2 class="anchored" data-anchor-id="file-viewing">File Viewing</h2>
-<p>DuckDB UI duckdb -ui</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">DuckDB</span> UI</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">duckdb</span> <span class="at">-ui</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="pollutant-codes" class="level2">
-<h2 class="anchored" data-anchor-id="pollutant-codes">Pollutant codes</h2>
-<p>https://www.eionet.europa.eu/aqportal/doc/IPR%20guidance_2.0.1_final.pdf Micrograms per cubic meter https://eeadmz1-downloads-webapp.azurewebsites.net/ European Environment Agency</p>
+<section id="data-sources" class="level2">
+<h2 class="anchored" data-anchor-id="data-sources">Data Sources</h2>
+<ul>
+<li><p><strong>Air Quality Data:</strong><br>
+Sourced from the <strong>European Environment Agency (EEA)</strong> via the <a href="https://eeadmz1-downloads-webapp.azurewebsites.net/">EEA Data Download Portal</a>.<br>
+Measurements are reported in micrograms per cubic meter (µg/m³).</p></li>
+<li><p><strong>Weather Data:</strong><br>
+Real-time and forecast weather variables retrieved from the <a href="https://open-meteo.com/">Open-Meteo API</a>.</p></li>
+<li><p><strong>Historic Climate Data:</strong><br>
+Provided by <a href="https://data.climpact.gr/en/dataset/497dc26d-45e0-4ad5-b8f3-5f8890f65129">CLIMPACT</a>, the Greek National Research Network for Climate Change and Its Effects.</p></li>
+<li><p><strong>Air Quality Index Reference:</strong><br>
+Methodological reference from the <a href="https://ecmwf-projects.github.io/copernicus-training-cams/proc-aq-index.html">Copernicus Atmosphere Monitoring Service (CAMS)</a>.</p></li>
+</ul>
 </section>
-<section id="weather-api" class="level2">
-<h2 class="anchored" data-anchor-id="weather-api">Weather API</h2>
-<p>https://open-meteo.com/</p>
+<section id="streamlit" class="level2">
+<h2 class="anchored" data-anchor-id="streamlit">Streamlit</h2>
+<p>The Streamlit app was used to create an interactive dashboard for exploring the data, connecting directly to the local DuckDB database. You can access it here: https://air-quality-thessaloniki.streamlit.app/</p>
 </section>
 </section>
 
