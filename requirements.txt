@@ -14,6 +14,6 @@ dbt-duckdb==1.8.0
 # ipykernel
 # matplotlib
 # seaborn
-pyjanitor==0.33.0
-configparser==7.2.0
-statsmodels==0.14.6
+# pyjanitor==0.33.0
+# configparser==7.2.0
+# statsmodels==0.14.6
