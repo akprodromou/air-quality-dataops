@@ -396,7 +396,7 @@ df_predictions["timestamp"] = pd.to_datetime(
 df_predictions_sorted = df_predictions.sort_values("timestamp")
 
 
-st.subheader("Forecast table (7-day daily averages)")
+st.subheader("Forecast table (Daily Averages)")
 
 # 1. Prepare data for display
 df_filtered_display = df_filtered.copy()
