@@ -35,9 +35,9 @@ st.title("Air Quality Monitoring - Thessaloniki")
 
 st.header("Overview")
 st.markdown("""
-This project is part of an end-to-end **Air Quality DataOps pipeline** for Thessaloniki, Greece. It automates the **collection,
-transformation, and prediction** of pollutant concentrations using open data from the **European Environment Agency, the CLIMPACT initiative,
-OpenAQ and Open-Meteo APIs**, with the aim of demonstrating a pipeline for monitoring pollution dynamics and assessing air quality trends in cities.
+This project is part of an end-to-end Air Quality DataOps pipeline for Thessaloniki, Greece. It automates the collection,
+transformation, and prediction of pollutant concentrations using open data from the European Environment Agency, the CLIMPACT initiative,
+OpenAQ and Open-Meteo APIs, with the aim of demonstrating a demo pipeline for monitoring pollution dynamics and assessing air quality trends in cities.
 
 It follows a 4-step process:
 1. **Data Ingestion**: Latest pollutant data readings (NO₂, PM₁₀, PM₂.₅, O₃, CO) are retrieved from OpenAQ.
@@ -490,7 +490,7 @@ st.subheader("1.2. Data Sources")
 
 st.markdown(
 """
-* **Air Quality** data are sourced from the **European Environment Agency (EEA)**, an agency of the European Union that provides insights 
+* **Air Quality** data are sourced from the European Environment Agency (EEA), an agency of the European Union that provides insights 
 on the state of Europe's environment. Its aim is to support Europe's environment and climate policies through the data it provides.
 The specific data is pulled from its [Air Quality Download Service API](https://www.eea.europa.eu/data-and-maps/data/aqereporting-9).
     * Historic data covers the period between 01/01/2023-31/12/2023.
@@ -525,45 +525,45 @@ st.header("2. Methodology")
 
 
 st.markdown("""
-The project follows a modular **data operations (DataOps)** architecture designed to ensure **daily automation**, 
-            **traceability**, and **scalability** across multiple data sources. The pipeline integrates raw air quality 
+The project follows a modular data operations (DataOps) architecture designed to ensure daily automation,
+            traceability, and scalability across multiple data sources. The pipeline integrates raw air quality 
             and meteorological data, transforms them into structured analytical tables, and prepares them for the 
             predictive model and dashboard visualization.
 """)
 st.subheader("2.1. Data Ingestion")
 st.markdown("""
-Two external APIs are queried daily through an **Airflow Directed Acyclic Graph (DAG)**:
+Two external APIs are queried daily through an Airflow Directed Acyclic Graph (DAG):
 
-- **OpenAQ API:** retrieves near real-time pollutant concentrations (PM₂.₅, PM₁₀, NO₂, O₃, SO₂).  
+- **OpenAQ API:** retrieves near real-time pollutant concentrations (PM₂.₅, PM₁₀, NO₂, O₃, SO₂).
 - **Open-Meteo API:** provides weather data (temperature, humidity, wind speed, precipitation, wind direction).  
 
 Each ingestion task stores the raw JSON responses in the project’s `ingestion/raw_data` directory, ensuring reproducibility and versioning.
 """)
 st.subheader("2.2. Transformation Layer")
 st.markdown("""
-Raw files are processed using **dbt (Data Build Tool)**, which performs sequential transformations through three layers:
+Raw files are processed using dbt (Data Build Tool), which performs sequential transformations through three layers:
 
-- **Staging (`stg_`):** converts the raw JSON into flattened, queryable tables.  
-- **Intermediate Cleaning (`stg_openaq_data`):** standardizes column names, units, and timestamps.  
+- **Staging (`stg_`):** converts the raw JSON into flattened, queryable tables.
+- **Intermediate Cleaning (`stg_openaq_data`):** standardizes column names, units, and timestamps.
 - **Marts (`analysis_air_quality`):** deduplicates data, harmonizes metrics between sources, and outputs analysis-ready tables.  
 
-The marts layer serves as the **single source of truth** for subsequent modeling and visualization.
+The marts layer serves as the single source of truth for subsequent modeling and visualization.
 
 """)
 st.subheader("2.3. Orchestration and Scheduling")
 st.markdown("""
-All ingestion and transformation tasks are orchestrated through an **Apache Airflow DAG**, which:
+All ingestion and transformation tasks are orchestrated through an Apache Airflow DAG, which:
 
-- Defines dependencies between tasks (Ingestion → Transformation → Forecasting).  
-- Runs automatically on a **daily schedule** (`@daily`).  
-- Includes retry logic and error handling for robust execution.  
+- Defines dependencies between tasks (Ingestion → Transformation → Forecasting).
+- Runs automatically on a daily schedule (`@daily`).
+- Includes retry logic and error handling for robust execution.
 
 This orchestration ensures that both air quality and weather datasets are refreshed before model execution.
 """)
 st.subheader("2.4. Integration with Forecasting and Visualization")
 st.markdown("""
-The **Random Forest forecast script** consumes the cleaned data from the marts tables and the most recent air quality readings for each station.  
-After predictions are generated, the results are passed to the **Streamlit application**, which visualizes both the **latest observed values** and the **7-day forecast** for each pollutant.
+The Random Forest forecast script consumes the cleaned data from the marts tables and the most recent air quality readings for each station.
+After predictions are generated, the results are passed to the Streamlit application, which visualizes both the latest observed values and the 7-day forecast for each pollutant.
 
 The resulting pipeline ensures an automated workflow, from raw data acquisition to presenting the information through visuals.
 """)
@@ -604,7 +604,7 @@ st.markdown("""
 """)
 st.subheader("3.2. Feature Engineering")
 st.markdown("""
-    - Pollutant values were aggregated from **hourly to daily means**.
+    - Pollutant values were aggregated from hourly to daily means.
     - A month variable was added to capture seasonal effects.
     - **Temporal autocorrelation** was modeled by including each pollutant’s previous-day mean as a
             new predictor (e.g., `pm25_value_prev`).
@@ -613,11 +613,11 @@ st.markdown("""
 st.subheader("3.3. Data Cleaning & Validation")
 st.markdown("""
     - Outliers and invalid readings were replaced with NaN and removed post-merge.
-    - Multicollinearity was examined using **Variance Inflation Factor (VIF)** to ensure model stability.
+    - Multicollinearity was examined using Variance Inflation Factor (VIF) to ensure model stability.
 """)
 st.subheader("3.4. Data Exploration")
 st.markdown("""
-   At this stage, the relationships between **meteorological** and **pollutant** variables was examined:
+   At this stage, the relationships between meteorological and pollutant variables was examined:
 """)
 
 fig = px.imshow(
@@ -634,33 +634,52 @@ fig.update_layout(
     xaxis_title="Targets",
     yaxis_title="Predictors",
     coloraxis_colorbar=dict(
-        title=dict(
-            text="Correlation",
-            side="top"
-        ),
-        orientation="h",
+        # title="Correlation",
+        orientation="v",
         tickmode="array",
-        tickvals=[-1, 0, 1],
-        x=0.5,
-        xanchor="center",
-        y=-0.25,
+        tickvals=[-1, -0.5, 0, 0.5, 1],
+        x=1.0,          # push colorbar to the right
+        xanchor="left",
+        y=1.0275,
         yanchor="top",
-        len=0.40,
-        thickness=10
+        len=0.5,
+        thickness=8
     )
 )
+
+
+# fig.update_layout(
+#     title="Correlation Heatmap",
+#     xaxis_title="Targets",
+#     yaxis_title="Predictors",
+#     coloraxis_colorbar=dict(
+#         # title=dict(
+#         #     text="Correlation",
+#         #     side="top"
+#         # ),
+#         orientation="v",
+#         tickmode="array",
+#         tickvals=[-1, 0, 1],
+#         x=0.5,
+#         xanchor="center",
+#         y=-0.25,
+#         yanchor="top",
+#         len=1,
+#         thickness=10
+#     )
+# )
 
 st.plotly_chart(fig, use_container_width=True)
 
 
 st.markdown("""
     - Bivariate Correlation Analysis: The strongest correlations were found between each pollutant’s *current and previous-day values* 
-            (O₃: 0.88, SO₂: 0.85, PM₂.₅: 0.78, PM₁₀: 0.70), indicating **temporal autocorrelation**, i.e. pollutant values in a time series are correlated with their own past values.
-        - Temperature showed a moderate positive correlation with **O₃** (0.38), consistent with photochemical lower ground ozone formation on warmer days.
-        - Wind speed showed a moderate negative correlations with most pollutants, reflecting its role in **pollutant dispersion**.
-        - **Relative humidity** and **precipitation** were weakly correlated overall, indicating limited impact on daily pollutant levels.
-        - Seasonal Effects: Summer months (July-August) were strongly associated with higher **O₃** concentrations, driven by strong sunlight and heat. 
-            Winter months (December-January) correlated positively with **PM₁₀**, likely due to increased **domestic heating** activities. 
+            (O₃: 0.88, SO₂: 0.85, PM₂.₅: 0.78, PM₁₀: 0.70), indicating *temporal autocorrelation*, i.e. pollutant values in a time series are correlated with their own past values.
+        - Temperature showed a moderate positive correlation with O₃ (0.38), consistent with photochemical lower ground ozone formation on warmer days.
+        - Wind speed showed a moderate negative correlations with most pollutants, reflecting its role in pollutant dispersion.
+        - Relative humidity and precipitation were weakly correlated overall, indicating limited impact on daily pollutant levels.
+        - Seasonal Effects: Summer months (July-August) were strongly associated with higher O₃ concentrations, driven by strong sunlight and heat. 
+            Winter months (December-January) correlated positively with PM₁₀, likely due to increased domestic heating activities. 
 """)
 
 # Rename columns for display
@@ -680,20 +699,20 @@ fig = px.line(
 st.plotly_chart(fig, use_container_width=True)
             
 st.markdown("""
-    - Scatterplot Analysis: Scatter plots confirmed positive associations between **O₃ and temperature**, and negative associations between **NO₂ and wind speed**.  
+    - Scatterplot Analysis: Scatter plots confirmed positive associations between O₃ and temperature, and negative associations between NO₂ and wind speed.
 
-    - Multicollinearity Assessment: Variance Inflation Factor (VIF) analysis revealed high collinearity among certain predictors 
-            (e.g., *previous-day pollutants* and *relative humidity*, VIF > 20). However, as the subsequent modeling phase employed a **Random Forest Regressor**, 
-            which is *non-linear and robust to multicollinearity*, no variables were excluded.  
+    - Multicollinearity Assessment: Variance Inflation Factor (VIF) analysis revealed high collinearity among certain predictors
+            (e.g., *previous-day pollutants* and *relative humidity*, VIF > 20). However, as the subsequent modeling phase employed a Random Forest Regressor,
+            which is *non-linear and robust to multicollinearity*, no variables were excluded.
 """)
 st.subheader("3.5. Model Selection & Training")
 st.markdown("""
-   - Given the **non-linear** and **interdependent** nature of pollutant behavior, a **Random Forest Regressor** was chosen over linear models.  
-   - The model was trained on 70% of the dataset and tested on the remaining 30%, using meteorological, temporal, and lag variables as predictors.  
+   - Given the non-linear and interdependent nature of pollutant behavior, a Random Forest Regressor was chosen over linear models.
+   - The model was trained on 70% of the dataset and tested on the remaining 30%, using meteorological, temporal, and lag variables as predictors.
 """)
 st.subheader("3.6. Evaluation Metrics")
 st.markdown("""
-   - Model performance was evaluated with **R²** and **Root Mean Squared Error (RMSE)** for each pollutant: 
+   - Model performance was evaluated with R² and Root Mean Squared Error (RMSE) for each pollutant:
     """)
 
 # Rename pollutant column
@@ -710,7 +729,7 @@ with col2:
     st.dataframe(df_metrics_display, width=230)
 
 st.markdown(""" 
-    Results show better predictability for pollutants driven by **meteorological processes** (O₃, PM₂.₅, SO₂) and lower accuracy for **localized emissions** (NO₂, PM₁₀).
+    Results show better predictability for pollutants driven by meteorological processes (O₃, PM₂.₅, SO₂) and lower accuracy for localized emissions (NO₂, PM₁₀).
 """)
 
 st.markdown("""
