@@ -487,8 +487,8 @@ y_pred = pd.DataFrame(y_pred, columns=targets)
 ```
 
 And now I'll estimate:
-- The coefficient of Determination R^2: Measures the proportion of the variance in the dependent variable that is predictable from the independent variables.	
-- The Root Mean Squared Error (RMSE), which measures the average magnitude of the errors.	
+- The coefficient of Determination R^2: Measures the proportion of the variance in the dependent variable that is predictable from the independent variables
+- The Root Mean Squared Error (RMSE), which measures the average magnitude of the errors
 
 ```{python}
 # empty list to store my results

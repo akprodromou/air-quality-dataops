@@ -8,3 +8,12 @@ joblib==1.5.3
 scikit-learn==1.7.2
 dbt-core==1.10.11
 dbt-duckdb==1.8.0
+jupyter
+nbformat
+nbclient
+ipykernel
+matplotlib
+seaborn
+pyjanitor==0.33.0
+configparser==7.2.0
+statsmodels==0.14.6

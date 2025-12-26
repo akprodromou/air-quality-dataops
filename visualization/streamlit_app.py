@@ -29,11 +29,7 @@ df_monthly = pd.read_csv("data/forecasts/monthly_mean_pollutants.csv")
 corr_subset = pd.read_csv("data/forecasts/correlation_matrix.csv", index_col=0)
 df_metrics = pd.read_csv("data/forecasts/model_metrics.csv")
 
-
-
-# Plots
-
-# Current Reading
+# Intro
 
 st.title("Air Quality Monitoring - Thessaloniki")
 
@@ -51,6 +47,10 @@ It follows a 4-step process:
 4. **Visualization**: Current readings and daily pollutant forecasts for the following week are presented to the users,
     providing pollutant information and associated health risk levels.
 """)
+
+st.header("Dashboard")
+
+st.subheader("Current Readings (Hourly Values)")
 
 ## Load the tables
 # Define DataFrame for current measurements
@@ -137,8 +137,9 @@ st.markdown(
 today = datetime.date.today().strftime("%d-%m-%Y")
 
 # Caption with reference
-st.caption("""
+st.caption(f"""
 Hourly values (source: European Environment Agency - Air Quality Download Service API)
+({today})
 """)
 
 # Forecast
@@ -275,37 +276,8 @@ df_filtered = forecast_df.loc[mask].copy()
 columns_to_keep = ["forecast_day"] + [p for p in selected if p in df_filtered.columns]
 df_filtered = df_filtered[columns_to_keep]
 
-st.subheader("Forecast table (7-day)")
-
-# 1. Prepare data for display
-df_filtered_display = df_filtered.copy()
-df_filtered_display["forecast_day"] = df_filtered_display["forecast_day"].dt.strftime(
-    "%d-%m-%Y"
-)
-
-# 2. Round numeric pollutant columns to 1 decimal place
-for p in EXPECTED_POLLUTANTS:
-    if p in df_filtered_display.columns:
-        df_filtered_display[p] = df_filtered_display[p].round(1)
-
-# 3. Rename the columns
-# Create a dictionary with only the columns present in the DataFrame
-rename_map = {
-    old_name: new_name
-    for old_name, new_name in COLUMN_MAPPING.items()
-    if old_name in df_filtered_display.columns
-}
-
-df_filtered_display.rename(columns=rename_map, inplace=True)
-
-# 4. Convert DataFrame to list of dicts and display
-st.dataframe(df_filtered_display.to_dict(orient="records"), width='stretch')
-
-# add a caption
-st.caption("Daily Average Values (predicted)")
-
 # Individual pollutant bars
-st.subheader("Individual pollutant forecasts")
+st.subheader("Forecasts (Daily Averages)")
 
 if selected:
     chart_index = 0
@@ -422,6 +394,36 @@ df_predictions["timestamp"] = pd.to_datetime(
     + df_predictions["reading_time"].astype(str)
 )
 df_predictions_sorted = df_predictions.sort_values("timestamp")
+
+
+st.subheader("Forecast table (7-day daily averages)")
+
+# 1. Prepare data for display
+df_filtered_display = df_filtered.copy()
+df_filtered_display["forecast_day"] = df_filtered_display["forecast_day"].dt.strftime(
+    "%d-%m-%Y"
+)
+
+# 2. Round numeric pollutant columns to 1 decimal place
+for p in EXPECTED_POLLUTANTS:
+    if p in df_filtered_display.columns:
+        df_filtered_display[p] = df_filtered_display[p].round(1)
+
+# 3. Rename the columns
+# Create a dictionary with only the columns present in the DataFrame
+rename_map = {
+    old_name: new_name
+    for old_name, new_name in COLUMN_MAPPING.items()
+    if old_name in df_filtered_display.columns
+}
+
+df_filtered_display.rename(columns=rename_map, inplace=True)
+
+# 4. Convert DataFrame to list of dicts and display
+st.dataframe(df_filtered_display.to_dict(orient="records"), width='stretch')
+
+# add a caption
+st.caption("Daily Average Values (predicted)")
 
 st.markdown("""
 ---
@@ -640,8 +642,8 @@ fig.update_layout(
         xanchor="center",
         y=-0.25,
         yanchor="top",
-        len=0.45,
-        thickness=12
+        len=0.40,
+        thickness=10
     )
 )
 
