@@ -35,11 +35,12 @@ st.title("Air Quality Monitoring - Thessaloniki")
 
 st.header("Overview")
 st.markdown("""
-This project is part of an end-to-end Air Quality DataOps pipeline for Thessaloniki, Greece. It automates the collection,
+This project is part of an Air Quality DataOps pipeline for Thessaloniki, Greece. It automates the collection,
 transformation, and prediction of pollutant concentrations using open data from the European Environment Agency, the CLIMPACT initiative,
-OpenAQ and Open-Meteo APIs, with the aim of demonstrating a demo pipeline for monitoring pollution dynamics and assessing air quality trends in cities.
+OpenAQ and Open-Meteo APIs. The aim is to demonstrate a simple pipeline for monitoring pollution dynamics and assessing air quality trends in cities
+that can be applied and extended in other fields and metrics, too.
 
-It follows a 4-step process:
+The project has been developed following a 4-step process:
 1. **Data Ingestion**: Latest pollutant data readings (NO₂, PM₁₀, PM₂.₅, O₃, CO) are retrieved from OpenAQ.
 2. **Data Transformation (dbt + DuckDB)**: The data is cleaned, standardized and structured for analysis.
 3. **Predictive modelling**: A Random Forest model trained on historical air quality (EEA) and weather data (CLIMPACT) is used to
