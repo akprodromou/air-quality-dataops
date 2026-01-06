@@ -48,8 +48,8 @@ The project has been developed following a 4-step process:
 4. **Visualization**: Current readings and daily pollutant forecasts for the following week are presented to the users,
     providing pollutant information and associated health risk levels.
             
-Below we start by a) presenting the final outcome of the project (i.e. the Dashboard) and then move on to explaining the process used starting with
-            b) the scientific terms used and c) the data analysis methodology we followed.
+Below we start by a) presenting the final outcome of the project (i.e. the Dashboard) and then move on to explaining the process followed by
+b) giving a short background on the scientific terms used and c) the data analysis methodology followed.
 """)
 
 st.header("Dashboard")
